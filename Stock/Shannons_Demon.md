@@ -1,6 +1,6 @@
 # Shannon's Demon
 
-Rev. 0 | Created: 2026-08-29 | Updated: 2026-08-29 17:35 UTC
+Rev. 1 | Created: 2026-08-29 | Updated: 2026-08-29 17:29 UTC
 
 > **Goal** — 리밸런싱이 만드는 성장률 이득의 크기를 수치로 확정한다. "리밸런싱은 좋다" 가 아니라 "연 몇 %p 이며 거래비용 몇 bps 에서 사라지는가" 를 판단 기준으로 쓸 수 있게 한다.
 >
@@ -352,7 +352,7 @@ Table 6 과 Table 7 을 함께 보면 실행 규칙이 나온다. 무비용 이�
 
 ## Appendix B. CLI (Command Line Options)
 
-세 script 모두 option 없이 실행하면 이름과 version 을 출력하고, `-h` 로 전체 목록을, `-v` 로 version 을 보인다. `--output-folder` 는 필수이며 모든 산출물의 root 가 된다.
+세 script 모두 option 없이 실행하면 이름과 version 을 출력하고, `-h` 로 전체 목록을, `-v` 로 version 을 보인다. `--output-folder` 는 필수이며 모든 산출물의 root 가 된다. 아래 명령은 이 문서가 있는 folder 를 기준으로 한다.
 
 ```bash
 python3 src/shannon_demon.py   --output-folder Shannons_Demon_fig
@@ -360,7 +360,7 @@ python3 src/kelly.py           --output-folder Shannons_Demon_fig
 python3 src/rebalance_bonus.py --output-folder Shannons_Demon_fig
 ```
 
-`kelly.py` 는 `shannon_demon.py` 를 import 하므로 같은 folder 에서 실행한다.
+`kelly.py` 는 `shannon_demon.py` 를 import 하므로 두 파일은 같은 folder 에 있어야 한다.
 
 | Option | Type | Default | Required | Description |
 |---|---|---|---|---|
