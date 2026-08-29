@@ -1,0 +1,14 @@
+{
+  "name": "finance-local",
+  "owner": {
+    "name": "yRocket",
+    "email": "ykim2718@gmail.com"
+  },
+  "plugins": [
+    {
+      "name": "yrocket-rules",
+      "source": "./plugins/yrocket-rules",
+      "description": "코드/문서 작성 공용 규칙: coding_rules·md_rules skill, WordPress post 를 GitHub markdown 으로 옮기는 wp-post-to-github skill, 대화 규칙과 필수 skill 로딩을 주입하는 UserPromptSubmit hook."
+    }
+  ]
+}
