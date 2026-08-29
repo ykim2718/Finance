@@ -1,0 +1,29 @@
+{
+  "source_name": "Kaggle, Stock Market Dataset (jacksoncrow/stock-market-dataset)",
+  "source_url": "https://www.kaggle.com/datasets/jacksoncrow/stock-market-dataset",
+  "source_origin": "Yahoo Finance, snapshot dated 2020-04-02",
+  "date_column": "Date",
+  "date_format": null,
+  "price_column": "Adj Close",
+  "tickers": [
+    "AAPL",
+    "AMZN"
+  ],
+  "files": {
+    "AAPL": {
+      "path": "../Kaggle/Stock-Market-Dataset/Stock/AAPL.csv",
+      "rows_used": 9909,
+      "first_date": "1980-12-12",
+      "last_date": "2020-04-01"
+    },
+    "AMZN": {
+      "path": "../Kaggle/Stock-Market-Dataset/Stock/AMZN.csv",
+      "rows_used": 5758,
+      "first_date": "1997-05-15",
+      "last_date": "2020-04-01"
+    }
+  },
+  "aligned_rows": 5758,
+  "aligned_first_date": "1997-05-15",
+  "aligned_last_date": "2020-04-01"
+}

@@ -17,10 +17,12 @@ the source it came from.
 
 Changelog:
 - 0.0.0 Initial release.
+- 0.1.0 Add the weighted-average-asset benchmark, so the measured advantage can be split into the
+        rebalancing bonus and the drift gain buy-and-hold earns on its own.
 """
 
 __author__ = 'yRocket'
-__version__ = "0.0.0.2026.8.29"
+__version__ = "0.1.0.2026.8.29"
 
 import argparse
 import enum
@@ -86,6 +88,8 @@ class Column(enum.StrEnum):
     CAGR = enum.auto()
     BUY_HOLD_CAGR = enum.auto()
     ADVANTAGE = enum.auto()
+    WEIGHTED_ASSET_CAGR = enum.auto()
+    BONUS_VS_WEIGHTED_ASSET = enum.auto()
     ANNUAL_TURNOVER = enum.auto()
     MAX_DRAWDOWN = enum.auto()
     ANNUAL_VOLATILITY = enum.auto()
@@ -249,6 +253,20 @@ class Backtester:
         self.gross = (prices / prices.shift(1)).iloc[1:].to_numpy()
         self.dates = prices.index[1:]
 
+    def weighted_asset_cagr(self, start: int = 0, end: int = None) -> float:
+        """
+        Return the weighted average of the assets' own CAGRs over the step range.
+
+        This is the benchmark the closed-form rebalancing bonus is written against. It is not
+        buy-and-hold: buy-and-hold lets the winner's weight drift up, so it earns part of the same
+        gap without trading. Reporting both separates the bonus from the drift gain.
+        """
+        end = self.gross.shape[0] if end is None else end
+        gross, _ = self._slice(start=start, end=end)
+        years = gross.shape[0] / self.trading_days_per_year
+        asset_log_growth = np.log(gross).sum(axis=0) / years
+        return float(np.expm1(float((asset_log_growth * self.weights).sum())))
+
     def _slice(self, start: int, end: int) -> tuple:
         """Return the growth factors and dates of the half-open step range `[start, end)`."""
         if not 0 <= start < end <= self.gross.shape[0]:
@@ -348,11 +366,13 @@ def run_cost_sweep(backtester: Backtester, policies: tuple, cost_bps_grid: tuple
 
     Index: RangeIndex.
     Columns: `policy`, `rebalance_interval`, `band_width`, `cost_bps`, `cagr`, `buy_hold_cagr`,
-             `advantage`, `annual_turnover`, `max_drawdown`, `annual_volatility`.
+             `advantage`, `weighted_asset_cagr`, `bonus_vs_weighted_asset`, `annual_turnover`,
+             `max_drawdown`, `annual_volatility`.
     """
     if len(policies) == 0 or len(cost_bps_grid) == 0:
         raise ValueError("policies and cost_bps_grid must both be non-empty.")
     baseline = backtester.run(policy=RebalancePolicy.buy_and_hold(), cost_rate=0.0)
+    weighted_asset = backtester.weighted_asset_cagr()
     rows = []
     pairs = [(policy, cost) for policy in policies for cost in cost_bps_grid]
     pbar = tqdm(pairs, ncols=100, unit='run')
@@ -367,6 +387,8 @@ def run_cost_sweep(backtester: Backtester, policies: tuple, cost_bps_grid: tuple
             str(Column.CAGR): outcome['cagr'],
             str(Column.BUY_HOLD_CAGR): baseline['cagr'],
             str(Column.ADVANTAGE): outcome['cagr'] - baseline['cagr'],
+            str(Column.WEIGHTED_ASSET_CAGR): weighted_asset,
+            str(Column.BONUS_VS_WEIGHTED_ASSET): outcome['cagr'] - weighted_asset,
             str(Column.ANNUAL_TURNOVER): outcome['annual_turnover'],
             str(Column.MAX_DRAWDOWN): outcome['max_drawdown'],
             str(Column.ANNUAL_VOLATILITY): outcome['annual_volatility'],
@@ -552,7 +574,13 @@ def write_provenance(path: pathlib.Path, loader: PriceLoader, panel: pd.DataFram
 
 def report_sweep(sweep_frame: pd.DataFrame, rolling_frame: pd.DataFrame, window_years: int) -> None:
     """Print the headline numbers, all computed from the saved frames."""
-    print(f"\nbuy-and-hold CAGR: {sweep_frame[str(Column.BUY_HOLD_CAGR)].iloc[0] * 100.0:+.4f} %")
+    buy_hold = float(sweep_frame[str(Column.BUY_HOLD_CAGR)].iloc[0])
+    weighted_asset = float(sweep_frame[str(Column.WEIGHTED_ASSET_CAGR)].iloc[0])
+    print(f"\nweighted-average asset CAGR: {weighted_asset * 100.0:+.4f} %")
+    print(f"buy-and-hold CAGR          : {buy_hold * 100.0:+.4f} %")
+    # In log growth, so the split adds up the way the closed-form bonus is stated.
+    drift_gain = float(np.log1p(buy_hold) - np.log1p(weighted_asset))
+    print(f"buy-and-hold gain from weight drift: {drift_gain * 100.0:+.4f} %p per year")
     print("\nCAGR advantage over buy-and-hold (%p):")
     table = sweep_frame.pivot_table(index=str(Column.POLICY), columns=str(Column.COST_BPS),
                                     values=str(Column.ADVANTAGE), aggfunc='first') * 100.0
