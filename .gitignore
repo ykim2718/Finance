@@ -1,2 +1,8 @@
 __pycache__/
 *.py[cod]
+
+# Claude Code plugin registration: kept local so the rules apply while working,
+# never pushed.
+.claude/
+.claude-plugin/
+plugins/
