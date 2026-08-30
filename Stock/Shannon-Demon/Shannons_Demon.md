@@ -1,12 +1,12 @@
 # Shannon's Demon
 
-Rev. 4 | Created: 2026-08-29 | Updated: 2026-08-30 02:33 UTC
+Rev. 5 | Created: 2026-08-29 | Updated: 2026-08-30 02:36 UTC
 
 > **Goal** — 리밸런싱이 만드는 성장률 이득의 크기를 수치로 확정한다. "리밸런싱은 좋다" 가 아니라 "연 몇 %p 이며 거래비용 몇 bps 에서 사라지는가" 를 판단 기준으로 쓸 수 있게 한다.
 >
 > **Non-Goals** — 자산 3개 이상의 최적 배분, 세금·환율·leverage 모형, 종목 선택 규칙은 다루지 않는다. 실제 시세는 두 종목의 사후 표본 하나이며, 전략 추천이 아니라 모형 검증에 쓴다.
 >
-> **Background** — Claude Shannon 이 1966년 MIT 강연에서 제시한 예시가 출발점이다 [\[4\]](#ref-4). 기대 성장률이 0인 자산과 현금을 반씩 들고 매 기간 비중을 되돌리면 포트폴리오가 복리로 자란다는 주장이다. 이 주장은 널리 인용되지만 인용되는 수치는 대개 극단적 parameter 에서 나온 것이고, 거래비용을 뺀 값이 아니다. 이 문서는 원래 주장을 재현한 뒤, 현실적 volatility 와 거래비용에서 무엇이 남는지를 확인한다.
+> **Background** — Claude Shannon 이 1966년 MIT 강연에서 제시한 예시가 출발점이다 \[[4](#ref-4)\]. 기대 성장률이 0인 자산과 현금을 반씩 들고 매 기간 비중을 되돌리면 포트폴리오가 복리로 자란다는 주장이다. 이 주장은 널리 인용되지만 인용되는 수치는 대개 극단적 parameter 에서 나온 것이고, 거래비용을 뺀 값이 아니다. 이 문서는 원래 주장을 재현한 뒤, 현실적 volatility 와 거래비용에서 무엇이 남는지를 확인한다.
 
 ## 1. Pipeline
 
@@ -53,7 +53,7 @@ $A = u - c$, $B = d - c$ 로 두고 $g'(f) = 0$ 을 풀면 최적 비중이 닫�
 
 $$f^{*} = -\frac{c \left(p A + (1-p) B\right)}{A B}$$
 
-이 규칙은 기대 log 자산을 최대화하는 베팅 비중을 구하는 Kelly criterion 과 같은 것이다 [\[1\]](#ref-1)[\[3\]](#ref-3). `kelly.py` 는 이 값과 `scipy.optimize.minimize_scalar` 로 구한 값을 함께 계산하고, 둘의 차이가 허용치를 넘으면 실행을 중단한다. 성장 함수나 최적화 구간이 틀렸을 때 조용히 넘어가지 않게 하기 위함이다.
+이 규칙은 기대 log 자산을 최대화하는 베팅 비중을 구하는 Kelly criterion 과 같은 것이다 \[[1](#ref-1)\]\[[3](#ref-3)\]. `kelly.py` 는 이 값과 `scipy.optimize.minimize_scalar` 로 구한 값을 함께 계산하고, 둘의 차이가 허용치를 넘으면 실행을 중단한다. 성장 함수나 최적화 구간이 틀렸을 때 조용히 넘어가지 않게 하기 위함이다.
 
 정의역은 $f \lt c / (c - d)$ 로 제한한다. 이 값 이상에서는 하락이 한 번 나오면 포트폴리오가 0 이하가 되어 log 가 정의되지 않는다.
 
@@ -63,7 +63,7 @@ $$f^{*} = -\frac{c \left(p A + (1-p) B\right)}{A B}$$
 
 $$\text{bonus} = \frac{1}{2}\left(\sum_i w_i \sigma_i^2 - \sigma_p^2\right), \qquad \sigma_p^2 = w^{\top} \Sigma w$$
 
-이 항은 stochastic portfolio theory 에서 excess growth rate 로 불리는 양과 같다 [\[2\]](#ref-2).
+이 항은 stochastic portfolio theory 에서 excess growth rate 로 불리는 양과 같다 \[[2](#ref-2)\].
 
 두 자산의 volatility 가 같고 비중이 $w$, $1-w$ 일 때 이 값은 $w (1-w) \sigma^2 (1 - \rho)$ 로 정리된다. volatility 의 제곱에 비례하고, correlation 이 낮을수록 커진다.
 
