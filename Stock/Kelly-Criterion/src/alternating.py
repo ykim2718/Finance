@@ -8,10 +8,11 @@ closed-form multiplier that explains the result.
 
 Changelog:
 - 0.0.0 Initial release.
+- 0.1.0 Accept a zero fraction, so the all-cash baseline can be drawn alongside the staked paths.
 """
 
 __author__ = 'yRocket'
-__version__ = "0.0.0.2026.8.30"
+__version__ = "0.1.0.2026.8.30"
 
 import argparse
 import enum
@@ -46,7 +47,7 @@ DEFAULT_DOWN_RATE = 0.10
 DEFAULT_N_DAYS = 100
 DEFAULT_INITIAL_PRICE = 1.0
 DEFAULT_INITIAL_WEALTH = 100.0
-DEFAULT_FRACTIONS = (0.25, 0.50, 0.75, 1.00)
+DEFAULT_FRACTIONS = (0.00, 0.25, 0.50, 0.75, 1.00)
 
 
 class Column(enum.StrEnum):
@@ -110,9 +111,12 @@ class AlternatingPath:
         return self._spec.initial_price * growth
 
     def wealth(self, fraction: float) -> np.ndarray:
-        """Wealth on day 0 through day `n_days` when `fraction` of it is staked every day."""
-        if fraction <= 0.0:
-            raise ValueError(f"fraction must be positive; got {fraction}.")
+        """Wealth on day 0 through day `n_days` when `fraction` of it is staked every day.
+
+        A fraction of 0 leaves everything in cash, so the path stays flat at the initial wealth.
+        """
+        if fraction < 0.0:
+            raise ValueError(f"fraction must not be negative; got {fraction}.")
         if fraction >= self._spec.ruin_fraction:
             raise ValueError(
                 f"fraction {fraction} reaches ruin on a down day; "
@@ -208,16 +212,16 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument('--initial-wealth', type=float, default=DEFAULT_INITIAL_WEALTH,
                         help='wealth on day 0')
     parser.add_argument('--fractions', type=float, nargs='+', default=list(DEFAULT_FRACTIONS),
-                        help='bet fractions traced on the wealth panel')
+                        help='bet fractions traced on the wealth panel; 0 draws the all-cash baseline')
 
     args = parser.parse_args()
     parent = args.output_folder.parent if args.output_folder.parent != pathlib.Path('') else pathlib.Path('.')
     if not parent.is_dir():
         parser.error(f"--output-folder {args.output_folder} cannot be created: {parent} is not a folder.")
     ruin_fraction = 1.0 / args.down_rate if args.down_rate > 0.0 else float('inf')
-    out_of_range = [f for f in args.fractions if f <= 0.0 or f >= ruin_fraction]
+    out_of_range = [f for f in args.fractions if f < 0.0 or f >= ruin_fraction]
     if out_of_range:
-        parser.error(f"--fractions {out_of_range} fall outside (0, {ruin_fraction}), the ruin fraction.")
+        parser.error(f"--fractions {out_of_range} fall outside [0, {ruin_fraction}), the ruin fraction.")
     return args
 
 

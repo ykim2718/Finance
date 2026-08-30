@@ -1,6 +1,6 @@
 # Kelly Criterion
 
-Rev. 10 | Created: 2026-08-30 | Updated: 2026-08-30 16:13 UTC
+Rev. 11 | Created: 2026-08-30 | Updated: 2026-08-30 16:22 UTC
 
 > **Goal** — 베팅 비중 하나가 장기 성장률을 얼마나 좌우하는지 수치로 확정한다. "적당히 걸어라" 가 아니라 "최적 비중이 얼마이고, 거기서 벗어나면 성장률과 손실 확률이 각각 얼마나 나빠지는가" 를 판단 기준으로 쓸 수 있게 한다.
 >
@@ -185,17 +185,18 @@ $$\Delta g = 0.5 \ln \frac{1.5000}{1.2500} + 0.5 \ln \frac{0.7500}{0.8750} = 0.5
 본문의 게임은 배수가 2배와 반토막이라 값이 크다. 이 부록은 훨씬 얌전한 가격 경로 하나를 끝까지 따라가, 우위가 없을 때 비중이 무엇을 하는지 보인다. 주가는 1 에서 출발해 홀수 날 10% 오르고 짝수 날 10% 내리며, 이를 100일 반복한다. 투자금은 100 이고, 매일 자산의 고정 비율 $f$ 를 그 주식에 두고 나머지는 현금으로 둔다. 현금 배수는 본문과 같이 $c = 1$ 이다.
 
 <img src="Kelly_Criterion_fig/alternating/wealth_paths.png" width="900" style="max-width: 100%; display: block;" alt="Fig 4">
-Fig 4. Price path and the wealth it produces at four bet fractions
+Fig 4. Price path and the wealth it produces at five bet fractions
 
 Table 2. Wealth after 100 days by bet fraction, starting from 100
 | Bet fraction | Two-day multiplier | Final wealth | Total return |
 |---|---|---|---|
+| 0.00 | 1.000000 | 100.0000 | 0.0000% |
 | 0.25 | 0.999375 | 96.9224 | -3.0776% |
 | 0.50 | 0.997500 | 88.2359 | -11.7641% |
 | 0.75 | 0.994375 | 75.4241 | -24.5760% |
 | 1.00 | 0.990000 | 60.5006 | -39.4994% |
 
-네 비중 모두 손실이며, 비중이 클수록 손실이 크다. 이틀이 한 주기이므로 100일은 주기 50회이고, 한 주기의 배수는 다음과 같다.
+$f = 0$ 은 전액을 현금으로 두는 것이므로 자산이 100 에 그대로 있고, 나머지 네 비중은 모두 손실이며 비중이 클수록 손실이 크다. 이틀이 한 주기이므로 100일은 주기 50회이고, 한 주기의 배수는 다음과 같다.
 
 $$(1 + 0.10 f)(1 - 0.10 f) = 1 - 0.01 f^2$$
 
@@ -228,9 +229,9 @@ Table 3. CLI options of `alternating.py`
 | `--n-days` | int | 100 | no | 경로의 길이 |
 | `--initial-price` | float | 1.0 | no | 0일의 주가 |
 | `--initial-wealth` | float | 100.0 | no | 0일의 자산 |
-| `--fractions` | float list | 0.25 0.50 0.75 1.00 | no | 자산 경로를 그릴 비중 |
+| `--fractions` | float list | 0.00 0.25 0.50 0.75 1.00 | no | 자산 경로를 그릴 비중 |
 
-파산 비중 이상의 `--fractions` 는 에러로 막는다. 그 비중에서는 하락일 하루가 자산을 0 이하로 만들어 이후의 경로가 뜻을 잃기 때문이다.
+음수이거나 파산 비중 이상인 `--fractions` 는 에러로 막는다. 그 비중에서는 하락일 하루가 자산을 0 이하로 만들어 이후의 경로가 뜻을 잃기 때문이다.
 
 ## Appendix C. The `kelly.py` script
 
