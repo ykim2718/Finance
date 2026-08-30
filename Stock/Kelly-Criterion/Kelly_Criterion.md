@@ -1,12 +1,12 @@
 # Kelly Criterion
 
-Rev. 13 | Created: 2026-08-30 | Updated: 2026-08-30 16:38 UTC
+Rev. 14 | Created: 2026-08-30 | Updated: 2026-08-30 20:12 UTC
 
 > **Goal** — 베팅 비중 하나가 장기 성장률을 얼마나 좌우하는지 수치로 확정한다. "적당히 걸어라" 가 아니라 "최적 비중이 얼마이고, 거기서 벗어나면 성장률과 손실 확률이 각각 얼마나 나빠지는가" 를 판단 기준으로 쓸 수 있게 한다.
 >
 > **Non-Goals** — 승률과 배당률의 추정은 다루지 않는다. 이 문서는 그 값들이 정확히 주어졌다고 보고 비중만 푼다. 자산 2개 이상의 동시 배분, 세금과 거래비용도 범위 밖이다.
 >
-> **Background** — 유리한 베팅을 찾는 것과 얼마를 걸지 정하는 것은 다른 문제이다. 기대값이 양수인 베팅도 크게 걸면 장기 성장률이 0 이나 음수가 된다. John Kelly 는 1956년에 이 문제를 기대 log 자산의 최대화로 정식화했다 \[[1](#ref-1)\].
+> **Background** — 유리한 베팅을 찾는 것과 얼마를 걸지 정하는 것은 다른 문제이다. 기대값이 양수인 베팅도 크게 걸면 장기 성장률이 0 이나 음수가 된다. John Kelly 는 1956년에 이 문제를 기대 log 자산의 최대화로 정식화했다 \[[1](#ref-1)\]. 한국어로는 대중 매체에서도 소개되어 있다 \[[3](#ref-3)\].
 
 ## 1. The sizing problem
 
@@ -164,6 +164,9 @@ $$\Delta g = 0.5 \ln \frac{1.5000}{1.2500} + 0.5 \ln \frac{0.7500}{0.8750} = 0.5
 
 <a id="ref-2"></a>
 [2] Thorp, E. O. "The Kelly Criterion in Blackjack, Sports Betting, and the Stock Market." In Handbook of Asset and Liability Management, Volume 1, 385–428. North-Holland, 2006. DOI 10.1016/S1872-0978(06)01009-X
+
+<a id="ref-3"></a>
+[3] [북언더스탠딩](https://www.youtube.com/@understanding). "[수학 천재가 찾아냈다 절대 잃지 않는 투자법 | 북언더스탠딩 | 독하게 돈 공부 | 신영증권 박소연 이사](https://www.youtube.com/watch?v=h_sI7zIdZLI&t=1390s)." YouTube, July 2026.
 
 ---
 
