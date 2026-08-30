@@ -1,6 +1,6 @@
 # Shannon's Demon
 
-Rev. 8 | Created: 2026-08-29 | Updated: 2026-08-30 07:39 UTC
+Rev. 9 | Created: 2026-08-29 | Updated: 2026-08-30 15:44 UTC
 
 > **Goal** — 리밸런싱이 만드는 성장률 이득의 크기를 수치로 확정한다. "리밸런싱은 좋다" 가 아니라 "연 몇 %p 이며 거래비용 몇 bps 에서 사라지는가" 를 판단 기준으로 쓸 수 있게 한다.
 >
@@ -224,21 +224,9 @@ Fig 9. Rebalancing advantage over rolling 10-year windows
 - **variance drag** — 변동성 때문에 기하평균 수익률이 산술평균 수익률보다 낮아지는 현상.
 - **%p** — percentage point. 두 비율의 차이를 나타내는 단위.
 
-## Appendix B. Reproduction
+## Appendix B. The `shannon_demon.py` script
 
-본문의 수치는 세 script 의 각 한 번의 실행에서 나왔다. 이 부록은 그 실행을 재현하는 방법만 담는다.
-
-#### Pipeline
-
-```text
-shannon_demon.py    coin-flip game       -> chapter 2
-rebalance_bonus.py  lognormal market     -> chapters 3 and 4
-backtest.py         real price history   -> chapter 5
-```
-
-- `shannon_demon.py` — 동전 던지기 자산과 현금을 두고 리밸런싱과 buy-and-hold 를 같은 난수 위에서 비교한다.
-- `rebalance_bonus.py` — 같은 효과를 lognormal 자산에서 측정한다. closed form 값, 거래비용을 뺀 값, autocorrelation 이 있을 때의 값을 낸다.
-- `backtest.py` — 가정한 수익률 과정 대신 실제 시세를 읽어 같은 질문을 다시 던진다.
+2장의 수치를 낸다. 동전 던지기 자산과 현금을 두고 리밸런싱과 buy-and-hold 를 같은 난수 위에서 비교한다.
 
 #### Parameters
 
@@ -254,96 +242,38 @@ Table 8. Coin-flip game parameters used in chapter 2
 | `--n-paths` | 20,000 | Monte Carlo 경로 수 |
 | `--seed` | 20260829 | 난수 seed |
 
-Table 9. Lognormal market parameters used in chapters 3 and 4
-| Parameter | Value | Meaning |
-|---|---|---|
-| `--annual-drift` | 0.05 | 자산별 연 log drift |
-| `--annual-volatility` | 0.20 | 자산별 연 volatility |
-| `--correlation` | 0.20 | 두 자산 간 correlation |
-| `--stock-weight` | 0.50 | 첫 자산 목표 비중 |
-| `--steps-per-year` | 252 | 연간 simulation 단계 수 |
-| `--n-years` | 20 | 경로 길이 |
-| `--n-paths` | 1,000 | Monte Carlo 경로 수 |
-| `--rebalance-intervals` | 1 5 21 63 126 252 | 리밸런싱 간격, 단계 수 |
-| `--cost-bps` | 0 5 10 25 50 | one-way 거래비용 수준 |
-| `--phi-grid` | -0.30 ~ +0.30 | AR(1) 계수 9개 |
-| `--autocorr-normalization` | horizon | volatility 고정 기준 |
-
-Table 10. Price data used in chapter 5
-| Item | Value |
-|---|---|
-| Source | Kaggle, Stock Market Dataset ( jacksoncrow/stock-market-dataset ) |
-| Origin | Yahoo Finance, snapshot dated 2020-04-02 |
-| Tickers | AAPL, AMZN |
-| Price column | `Adj Close`, split 과 배당 반영 |
-| Common period | 1997-05-15 to 2020-04-01 |
-| Aligned rows | 5,758 |
-| Rolling window | 10 years, 21-day stride, 5 bps cost |
-
-앞 두 script 는 외부 자료를 읽지 않으며 난수는 seed 가 고정된 generator 에서 나온다. 같은 seed 와 같은 option 이면 결과가 재현된다.
+외부 자료를 읽지 않으며 난수는 seed 가 고정된 generator 에서 나온다. 같은 seed 와 같은 option 이면 결과가 재현된다.
 
 #### Output files
 
 ```text
-Shannons_Demon_fig/
-├── shannon_demon/
-│   ├── terminal_wealth.csv
-│   ├── wealth_paths.csv
-│   ├── wealth_paths.png
-│   └── growth_distribution.png
-├── rebalance_bonus/
-│   ├── bonus_grid.csv
-│   ├── frequency_net_bonus.csv
-│   ├── autocorrelation_effect.csv
-│   ├── bonus_heatmap.png
-│   ├── frequency_net_bonus.png
-│   └── autocorrelation_effect.png
-└── backtest/
-    ├── data_provenance.json
-    ├── aligned_prices.csv
-    ├── strategy_wealth.csv
-    ├── policy_cost_sweep.csv
-    ├── rolling_windows.csv
-    ├── wealth_curves.png
-    ├── policy_cost_sweep.png
-    ├── band_comparison.png
-    └── rolling_windows.png
+Shannons_Demon_fig/shannon_demon/
+├── terminal_wealth.csv
+├── wealth_paths.csv
+├── wealth_paths.png
+└── growth_distribution.png
 ```
 
 - `terminal_wealth.csv` — 1 file, shape (40,000 × 4). 1 row = 1 path × 1 strategy.
 - `wealth_paths.csv` — 1 file, shape (8,080 × 4). 1 row = 1 path × 1 period × 1 strategy.
-- `bonus_grid.csv` — 1 file, shape (63 × 3). 1 row = 1 volatility × 1 correlation.
-- `frequency_net_bonus.csv` — 1 file, shape (30,000 × 9). 1 row = 1 path × 1 rebalancing interval × 1 cost level.
-- `autocorrelation_effect.csv` — 1 file, shape (9,000 × 5). 1 row = 1 path × 1 AR(1) coefficient.
-- `data_provenance.json` — 1 file. 시세 자료의 출처, 읽은 file, 정렬된 기간.
-- `aligned_prices.csv` — 1 file, shape (5,758 × 3). 1 row = 1 date.
-- `strategy_wealth.csv` — 1 file, shape (23,028 × 3). 1 row = 1 date × 1 strategy.
-- `policy_cost_sweep.csv` — 1 file, shape (55 × 12). 1 row = 1 policy × 1 cost level.
-- `rolling_windows.csv` — 1 file, shape (310 × 8). 1 row = 1 window × 1 policy.
-- `*.png` — 9 files.
+- `*.png` — 2 files.
 
-분포를 그리는 figure 는 요약값이 아니라 표본을 저장한다. 본문의 모든 수치는 위 csv 에서 계산했으며 figure 에서 눈으로 읽은 값이 아니다.
+분포를 그리는 figure 는 요약값이 아니라 표본을 저장한다. 본문의 수치는 위 csv 에서 계산했으며 figure 에서 눈으로 읽은 값이 아니다.
 
 #### Safeguards
 
-- `rebalance_bonus.py` 는 closed form 보너스와 simulation 값의 차이가 허용치를 넘으면 경고를 낸다.
-- buy-and-hold 에 0 이 아닌 비용률을 넘기면 에러를 낸다. 거래하지 않는 전략에 거래비용을 붙이는 것은 호출자의 모순이지 기본값으로 덮을 일이 아니다.
-- `backtest.py` 의 출처 인자는 필수이며 결과 folder 의 `data_provenance.json` 에 그대로 기록된다. 수치가 출처와 분리되지 않게 하기 위함이다.
-- 날짜 형식이 모호한 가격 file 은 `--date-format` 으로 지정한다. 지정하지 않으면 day-first 를 month-first 로 읽어도 아무 경고가 나지 않는다.
+- 상승 배수가 하락 배수보다 크지 않거나 배수 중 하나가 0 이하이면 생성 시점에 에러를 낸다.
+- 주식 비중이 하락 시 포트폴리오를 0 이하로 만들면 에러를 낸다. 그 비중에서는 log 성장률이 정의되지 않는다.
 
-## Appendix C. CLI (Command Line Options)
+#### Command line
 
-세 script 모두 option 없이 실행하면 이름과 version 을 출력하고, `-h` 로 전체 목록을, `-v` 로 version 을 보인다. `--output-folder` 는 필수이며 모든 산출물의 root 가 된다. 세 script 는 이 문서 옆의 `src` folder 에 있으며, 아래 명령은 이 문서가 있는 folder 를 기준으로 한다.
+Option 없이 실행하면 이름과 version 을 출력하고, `-h` 로 전체 목록을, `-v` 로 version 을 보인다. `--output-folder` 는 필수이며 모든 산출물의 root 가 된다. Script 는 이 문서 옆의 `src` folder 에 있으며, 아래 명령은 이 문서가 있는 folder 를 기준으로 한다.
 
 ```bash
-python3 src/shannon_demon.py   --output-folder Shannons_Demon_fig
-python3 src/rebalance_bonus.py --output-folder Shannons_Demon_fig
-python3 src/backtest.py        --output-folder Shannons_Demon_fig \
-    --price-folder <PRICE_FOLDER> --tickers AAPL AMZN --price-column "Adj Close" \
-    --source-name "<DATASET_NAME>" --source-url "<DATASET_URL>" --source-origin "<ORIGIN>"
+python3 src/shannon_demon.py --output-folder Shannons_Demon_fig
 ```
 
-Table 11. CLI options of `shannon_demon.py`
+Table 9. CLI options of `shannon_demon.py`
 | Option | Type | Default | Required | Description |
 |---|---|---|---|---|
 | `--output-folder` | path | — | yes | 산출물 root |
@@ -358,7 +288,59 @@ Table 11. CLI options of `shannon_demon.py`
 | `--n-sample-paths` | int | 40 | no | 경로 figure 에 그릴 경로 수 |
 | `--seed` | int | 20260829 | no | 난수 seed |
 
-Table 12. CLI options of `rebalance_bonus.py`
+## Appendix C. The `rebalance_bonus.py` script
+
+3장과 4장의 수치를 낸다. 같은 효과를 lognormal 자산에서 측정하여 closed form 값, 거래비용을 뺀 값, autocorrelation 이 있을 때의 값을 각각 낸다.
+
+#### Parameters
+
+Table 10. Lognormal market parameters used in chapters 3 and 4
+| Parameter | Value | Meaning |
+|---|---|---|
+| `--annual-drift` | 0.05 | 자산별 연 log drift |
+| `--annual-volatility` | 0.20 | 자산별 연 volatility |
+| `--correlation` | 0.20 | 두 자산 간 correlation |
+| `--stock-weight` | 0.50 | 첫 자산 목표 비중 |
+| `--steps-per-year` | 252 | 연간 simulation 단계 수 |
+| `--n-years` | 20 | 경로 길이 |
+| `--n-paths` | 1,000 | Monte Carlo 경로 수 |
+| `--rebalance-intervals` | 1 5 21 63 126 252 | 리밸런싱 간격, 단계 수 |
+| `--cost-bps` | 0 5 10 25 50 | one-way 거래비용 수준 |
+| `--phi-grid` | -0.30 ~ +0.30 | AR(1) 계수 9개 |
+| `--autocorr-normalization` | horizon | volatility 고정 기준 |
+
+이 script 도 외부 자료를 읽지 않는다.
+
+#### Output files
+
+```text
+Shannons_Demon_fig/rebalance_bonus/
+├── bonus_grid.csv
+├── frequency_net_bonus.csv
+├── autocorrelation_effect.csv
+├── bonus_heatmap.png
+├── frequency_net_bonus.png
+└── autocorrelation_effect.png
+```
+
+- `bonus_grid.csv` — 1 file, shape (63 × 3). 1 row = 1 volatility × 1 correlation.
+- `frequency_net_bonus.csv` — 1 file, shape (30,000 × 9). 1 row = 1 path × 1 rebalancing interval × 1 cost level.
+- `autocorrelation_effect.csv` — 1 file, shape (9,000 × 5). 1 row = 1 path × 1 AR(1) coefficient.
+- `*.png` — 3 files.
+
+#### Safeguards
+
+- closed form 보너스와 simulation 값의 차이가 허용치를 넘으면 경고를 낸다.
+- buy-and-hold 에 0 이 아닌 비용률을 넘기면 에러를 낸다. 거래하지 않는 전략에 거래비용을 붙이는 것은 호출자의 모순이지 기본값으로 덮을 일이 아니다.
+- 비중이 0 이나 1 이면 에러를 낸다. 한쪽이 비면 리밸런싱할 것이 없다.
+
+#### Command line
+
+```bash
+python3 src/rebalance_bonus.py --output-folder Shannons_Demon_fig
+```
+
+Table 11. CLI options of `rebalance_bonus.py`
 | Option | Type | Default | Required | Description |
 |---|---|---|---|---|
 | `--output-folder` | path | — | yes | 산출물 root |
@@ -378,6 +360,62 @@ Table 12. CLI options of `rebalance_bonus.py`
 | `--sigma-grid` | float list | 0.05 ~ 0.60 | no | 보너스 격자의 volatility |
 | `--rho-grid` | float list | -0.90 ~ +0.90 | no | 보너스 격자의 correlation |
 | `--seed` | int | 20260829 | no | 난수 seed |
+
+## Appendix D. The `backtest.py` script
+
+5장의 수치를 낸다. 가정한 수익률 과정 대신 실제 시세를 읽어 같은 질문을 다시 던진다.
+
+#### Input data
+
+Table 12. Price data used in chapter 5
+| Item | Value |
+|---|---|
+| Source | Kaggle, Stock Market Dataset ( jacksoncrow/stock-market-dataset ) |
+| Origin | Yahoo Finance, snapshot dated 2020-04-02 |
+| Tickers | AAPL, AMZN |
+| Price column | `Adj Close`, split 과 배당 반영 |
+| Common period | 1997-05-15 to 2020-04-01 |
+| Aligned rows | 5,758 |
+| Rolling window | 10 years, 21-day stride, 5 bps cost |
+
+가격 file 은 읽기만 하고 내려받지 않는다. 출처는 CLI 필수 인자이며 결과 folder 에 그대로 기록된다.
+
+#### Output files
+
+```text
+Shannons_Demon_fig/backtest/
+├── data_provenance.json
+├── aligned_prices.csv
+├── strategy_wealth.csv
+├── policy_cost_sweep.csv
+├── rolling_windows.csv
+├── wealth_curves.png
+├── policy_cost_sweep.png
+├── band_comparison.png
+└── rolling_windows.png
+```
+
+- `data_provenance.json` — 1 file. 시세 자료의 출처, 읽은 file, 정렬된 기간.
+- `aligned_prices.csv` — 1 file, shape (5,758 × 3). 1 row = 1 date.
+- `strategy_wealth.csv` — 1 file, shape (23,028 × 3). 1 row = 1 date × 1 strategy.
+- `policy_cost_sweep.csv` — 1 file, shape (55 × 12). 1 row = 1 policy × 1 cost level.
+- `rolling_windows.csv` — 1 file, shape (310 × 8). 1 row = 1 window × 1 policy.
+- `*.png` — 4 files.
+
+#### Safeguards
+
+- 출처 인자는 필수이며 결과 folder 의 `data_provenance.json` 에 그대로 기록된다. 수치가 출처와 분리되지 않게 하기 위함이다.
+- 날짜 형식이 모호한 가격 file 은 `--date-format` 으로 지정한다. 지정하지 않으면 day-first 를 month-first 로 읽어도 아무 경고가 나지 않는다.
+- 리밸런싱 규칙은 buy-and-hold, 정기 간격, 밴드 세 factory 로만 만든다. 밴드 정책에 간격을 넘기는 것처럼 무시될 수 있는 조합은 표현 자체가 불가능하다.
+- 가격 file 에 지정한 열이 없거나 값이 0 이하이면 에러를 낸다.
+
+#### Command line
+
+```bash
+python3 src/backtest.py --output-folder Shannons_Demon_fig \
+    --price-folder <PRICE_FOLDER> --tickers AAPL AMZN --price-column "Adj Close" \
+    --source-name "<DATASET_NAME>" --source-url "<DATASET_URL>" --source-origin "<ORIGIN>"
+```
 
 Table 13. CLI options of `backtest.py`
 | Option | Type | Default | Required | Description |
