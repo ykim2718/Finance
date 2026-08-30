@@ -13,10 +13,12 @@ Changelog:
 - 0.3.0 Drop the formula card; the document carries the formula as text. Fix the zone chart's
         y range so the curve is read against the same scale every run.
 - 0.4.0 Mark the growth span of the aggressive zone on the zone chart's y axis.
+- 0.5.0 Enlarge the zone labels and back the point annotations with a translucent panel, so
+        neither is lost against the filled zones.
 """
 
 __author__ = 'yRocket'
-__version__ = "0.4.0.2026.8.30"
+__version__ = "0.5.0.2026.8.30"
 
 import argparse
 import enum
@@ -70,6 +72,9 @@ ZONE_LABELS: tuple = ('Conservative', 'Aggressive', 'Over-aggressive', 'Insane')
 ZONE_COLOURS: tuple = ('tab:olive', 'tab:orange', 'tab:red', 'dimgrey')
 ZONE_TAIL: float = 2.4                  # right edge of the plot, in multiples of the optimum
 ZONE_YLIM: tuple = (-0.02, 0.08)        # fixed so every run is read against the same scale
+ZONE_LABEL_SCALE = 1.5                  # zone names carry the chart, so they outsize other text
+ANNOTATION_BBOX = {'boxstyle': 'round,pad=0.25', 'facecolor': 'white', 'alpha': 0.25,
+                   'edgecolor': 'none'}  # keeps a label readable over a filled zone
 OUTPUT_STEM: str = 'kelly'
 
 
@@ -246,7 +251,8 @@ def plot_growth_zones(analyzer: KellyAnalyzer, optimum: float, output_path: path
         axis.fill_between(fractions[inside], 0.0, growth[inside],
                           color=ZONE_COLOURS[index], alpha=0.55, linewidth=0.0)
         axis.text(0.5 * (left + right), 0.5 * ZONE_YLIM[1] * 0.30, ZONE_LABELS[index],
-                  ha='center', va='center', fontsize=font_size, fontweight='bold')
+                  ha='center', va='center', fontsize=font_size * ZONE_LABEL_SCALE,
+                  fontweight='bold')
     axis.plot(fractions, growth, color='black', linewidth=2.0)
     axis.axhline(0.0, color='black', linewidth=1.0)
 
@@ -270,7 +276,8 @@ def plot_growth_zones(analyzer: KellyAnalyzer, optimum: float, output_path: path
         axis.annotate(f"{label}\nf = {position:.3f}, g = {height:+.4f}",
                       xy=(position, height), xytext=(0.0, 16.0 if above else -18.0),
                       textcoords='offset points', ha='center',
-                      va='bottom' if above else 'top', fontsize=font_size - 1)
+                      va='bottom' if above else 'top', fontsize=font_size - 1,
+                      bbox=ANNOTATION_BBOX, zorder=4)
     axis.set_xticks(edges[:-1])
     axis.set_xticklabels(['0', 'half Kelly', 'Kelly', 'twice Kelly'])
     axis.set_xlim(0.0, limit)
