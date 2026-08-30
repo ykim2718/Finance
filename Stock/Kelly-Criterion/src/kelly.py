@@ -12,10 +12,11 @@ Changelog:
 - 0.2.0 Add the bet-size zone chart and the formula card used by section 4 of the document.
 - 0.3.0 Drop the formula card; the document carries the formula as text. Fix the zone chart's
         y range so the curve is read against the same scale every run.
+- 0.4.0 Mark the growth span of the aggressive zone on the zone chart's y axis.
 """
 
 __author__ = 'yRocket'
-__version__ = "0.3.0.2026.8.30"
+__version__ = "0.4.0.2026.8.30"
 
 import argparse
 import enum
@@ -250,6 +251,14 @@ def plot_growth_zones(analyzer: KellyAnalyzer, optimum: float, output_path: path
     axis.axhline(0.0, color='black', linewidth=1.0)
 
     # Mark the three boundaries on the curve itself, so the reader can read a value off each.
+    # The aggressive zone runs from half the optimum to the optimum. Carrying the growth at each
+    # of its edges across to the y axis turns the zone's width into a readable growth span.
+    span_low, span_high = ZONE_EDGES[1] * optimum, ZONE_EDGES[2] * optimum
+    for edge in (span_low, span_high):
+        height = float(analyzer.log_growth(edge))
+        axis.plot([0.0, edge], [height, height], linestyle='--', linewidth=1.2,
+                  color='black', alpha=0.75, zorder=2)
+
     # The last mark sits on the zero line, so its label goes below to clear the zone labels.
     for multiple, label, above in ((0.5, 'half Kelly', True), (1.0, 'Kelly', True),
                                    (2.0, 'twice Kelly', False)):

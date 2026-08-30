@@ -1,6 +1,6 @@
 # Kelly Criterion
 
-Rev. 7 | Created: 2026-08-30 | Updated: 2026-08-30 15:52 UTC
+Rev. 8 | Created: 2026-08-30 | Updated: 2026-08-30 15:55 UTC
 
 > **Goal** — 베팅 비중 하나가 장기 성장률을 얼마나 좌우하는지 수치로 확정한다. "적당히 걸어라" 가 아니라 "최적 비중이 얼마이고, 거기서 벗어나면 성장률과 손실 확률이 각각 얼마나 나빠지는가" 를 판단 기준으로 쓸 수 있게 한다.
 >
@@ -81,7 +81,7 @@ Table 1. Growth rate and simulated outcome by fraction
 
 세 번째가 가장 중요하다. 기대 log 성장률은 정의상 log 자산의 기댓값이지 흔한 결과가 아닌데, 중앙값과 일치한다는 것은 2.2 절의 해석이 맞다는 뜻이다. 기간이 길어질수록 log 자산이 정규분포에 가까워져 평균과 중앙값이 같아지기 때문이며, 4.3 절이 지적한 대로 기간이 짧으면 이 일치는 깨진다.
 
-<img src="Kelly_Criterion_fig/growth_curve.png" width="900" style="max-width: 100%;" alt="Fig 1">
+<img src="Kelly_Criterion_fig/growth_curve.png" width="900" style="max-width: 100%; display: block;" alt="Fig 1">
 Fig 1. Expected log growth against bet size, with the simulated medians overlaid
 
 ### 3.2 Flatness near the optimum
@@ -100,7 +100,7 @@ Fig 1. Expected log growth against bet size, with the simulated medians overlaid
 
 두 방향이 바꾸는 것이 다르기 때문이다. underbetting 은 분포 전체를 좁히고, overbetting 은 분포를 넓힌 채로 중앙값만 끌어내린다. 성장률이라는 한 숫자는 이 차이를 담지 못한다.
 
-<img src="Kelly_Criterion_fig/growth_violin.png" width="900" style="max-width: 100%;" alt="Fig 2">
+<img src="Kelly_Criterion_fig/growth_violin.png" width="900" style="max-width: 100%; display: block;" alt="Fig 2">
 Fig 2. Simulated growth distribution by bet size
 
 비중이 커질수록 분포의 폭이 넓어진다. 5th percentile 과 95th percentile 의 간격은 0.100 에서 0.0235, 0.500 에서 0.1109, 1.000 에서 0.2218 이다. 5th percentile 의 부호는 0.500 까지 양수이고 0.750 부터 음수이다.
@@ -115,7 +115,7 @@ $$f^{\ast} = -\frac{c \left(p A + (1-p) B\right)}{A B}, \qquad A = u - c, \qquad
 
 이 게임의 값 $u = 2$, $d = 0.5$, $c = 1$, $p = 0.5$ 를 넣으면 $f^{\ast} = 0.500$ 이다.
 
-<img src="Kelly_Criterion_fig/growth_zones.png" width="600" style="max-width: 100%;" alt="Fig 3">
+<img src="Kelly_Criterion_fig/growth_zones.png" width="600" style="max-width: 100%; display: block;" alt="Fig 3">
 Fig 3. Growth curve split into four zones at half, one and two times the optimum
 
 - $f^{\ast}$ 아래 절반 — 성장률을 일부 포기하는 대신 분포가 좁아지는 구간.
@@ -128,6 +128,8 @@ Fig 3 에 세 경계를 점으로 찍고 값을 함께 적었다. half Kelly 는
 이 중 twice Kelly 가 실질적인 상한이다. $f^{\ast}$ 는 성장률이 꺾이기 시작하는 지점일 뿐이어서 조금 넘겨도 성장률은 여전히 양수이지만, $2 f^{\ast}$ 를 넘는 순간 부호가 바뀌어 이길 확률이 있는 베팅으로 장기적으로 확실히 잃는다. 이 게임에서 $2 f^{\ast}$ 는 정확히 1.000 이므로 전 재산을 거는 것이 곧 그 경계이며, Table 1 의 비중 1.000 행이 +0.000000 인 것이 같은 값이다.
 
 half Kelly 는 반대쪽 끝을 보여준다. 성장률이 +0.0448 로 최대값 +0.0589 의 0.7608 배이므로, 비중을 절반으로 줄여도 성장의 4분의 1 미만을 내놓는다.
+
+Fig 3 의 점선 두 개가 그 대가를 y 축에서 직접 읽게 해 준다. Aggressive 구간의 양 끝에서 곡선까지 올라간 뒤 y 축으로 건너간 값이 +0.0448 과 +0.0589 이므로, 비중을 half Kelly 에서 Kelly 로 두 배 올려 얻는 것은 0.0141 뿐이다. 가로로는 구간의 절반을 더 거는데 세로로는 그만큼 오르지 않는다는 것이 이 그림의 요지이다.
 
 경계가 $f^{\ast}$ 와 $2 f^{\ast}$ 에 오는 것은 이 게임의 우연이 아니다. $g$ 는 $f=0$ 에서 0 이고 위로 볼록하므로, 최대점의 두 배에서 다시 0 을 지난다. 어떤 베팅이든 같은 구조를 갖는다.
 
@@ -278,7 +280,7 @@ Table 5. Realised against predicted annual log growth in %, full sample
 | 1.60 | +10.1875 | +15.6736 | -5.4860 |
 | 1.65 | ruined | +15.2777 | — |
 
-<img src="Kelly_Criterion_fig/kelly_backtest/growth_by_fraction.png" width="900" style="max-width: 100%;" alt="Fig 4">
+<img src="Kelly_Criterion_fig/kelly_backtest/growth_by_fraction.png" width="900" style="max-width: 100%; display: block;" alt="Fig 4">
 Fig 4. Realised growth against bet size, with the curve the full-sample estimate predicts
 
 식은 최적점 아래에서 잘 맞는다. 비중 1.00 까지 실제와 예측의 차이는 0.13 %p 를 넘지 않는다. 최적점 위에서는 빠르게 벌어져 1.40 에서 1.37 %p, 1.60 에서 5.49 %p 이며, 1.65 에서는 포트폴리오가 완전히 사라지는데 식은 여전히 +15.2777% 를 예측한다.
@@ -301,7 +303,7 @@ Table 6. Out-of-sample annual log growth in % over 34 windows, 1985-12-10 to 201
 | fixed 0.50 | +12.0332 | +0.8005 | +24.2183 | -31.3947 | +61.0758 | 0.7647 | -9.4107 |
 | fixed 1.00 | +18.8846 | -0.4611 | +44.9537 | -90.2913 | +116.5211 | 0.7353 | -18.6601 |
 
-<img src="Kelly_Criterion_fig/kelly_backtest/walk_forward.png" width="900" style="max-width: 100%;" alt="Fig 5">
+<img src="Kelly_Criterion_fig/kelly_backtest/walk_forward.png" width="900" style="max-width: 100%; display: block;" alt="Fig 5">
 Fig 5. Estimated Kelly fraction by window and the distribution of out-of-sample growth
 
 추정된 최적 비중은 구간에 따라 -0.3923 에서 4.7991 까지 흔들렸고 중앙값은 1.5018 이다. 34개 구간 중 16개에서 추정값이 파산 비중 1.6500 을 넘었고, 2개 구간에서는 음수가 되어 공매도를 지시했다. 2007-12-03 에 시작하는 구간에서는 추정값 4.7991 이 실제로 적용되어 포트폴리오가 사라졌다.

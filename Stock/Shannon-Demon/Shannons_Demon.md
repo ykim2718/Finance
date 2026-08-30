@@ -32,10 +32,10 @@ Table 1. Terminal wealth after 100 periods over 20,000 paths
 
 buy-and-hold 의 기간당 중앙 수익률은 +0.0000% 로 주식 단독의 성장률과 일치한다. 리밸런싱 포트폴리오의 중앙 최종자산은 361.0989 로 기간당 +6.0660% 이다. 성장률이 0 인 자산 둘로 6% 가 나온다는 주장은 재현된다.
 
-<img src="Shannons_Demon_fig/shannon_demon/wealth_paths.png" width="900" style="max-width: 100%;" alt="Fig 1">
+<img src="Shannons_Demon_fig/shannon_demon/wealth_paths.png" width="900" style="max-width: 100%; display: block;" alt="Fig 1">
 Fig 1. Sampled wealth paths of both strategies on a log scale
 
-<img src="Shannons_Demon_fig/shannon_demon/growth_distribution.png" width="900" style="max-width: 100%;" alt="Fig 2">
+<img src="Shannons_Demon_fig/shannon_demon/growth_distribution.png" width="900" style="max-width: 100%; display: block;" alt="Fig 2">
 Fig 2. Distribution of log growth per period over 20,000 paths
 
 Table 1 의 평균 열은 반대 방향을 가리킨다. buy-and-hold 의 평균이 리밸런싱 포트폴리오의 평균보다 두 자릿수 크지만, 이는 극히 드문 우측 꼬리 때문이며 경로의 0.46685 가 원금을 잃는다. 산술평균으로 전략을 고르면 정반대의 결론에 이른다.
@@ -59,7 +59,7 @@ Table 2. Closed-form gross bonus in %p of annual log growth
 | 20% | 1.90 | 1.00 | 0.10 |
 | 60% | 17.10 | 9.00 | 0.90 |
 
-<img src="Shannons_Demon_fig/rebalance_bonus/bonus_heatmap.png" width="900" style="max-width: 100%;" alt="Fig 3">
+<img src="Shannons_Demon_fig/rebalance_bonus/bonus_heatmap.png" width="900" style="max-width: 100%; display: block;" alt="Fig 3">
 Fig 3. Gross rebalancing bonus over volatility and correlation
 
 2장의 6% 를 만든 것은 리밸런싱이 아니라 자산의 변동성 크기이다. 배수가 2배와 반토막이라는 설정은 실제 시장에 없다. Table 2 가 보이듯 보너스는 volatility 의 제곱에 비례하므로, volatility 를 20% 로 낮추면 같은 원리에서 나오는 값은 1.00 %p 수준으로 떨어진다.
@@ -98,7 +98,7 @@ Table 4. Turnover, break-even cost and win rate by rebalancing interval
 | semiannual (126) | 0.1419 | 282.1 bps | 0.6860 |
 | annual (252) | 0.0995 | 330.3 bps | 0.6770 |
 
-<img src="Shannons_Demon_fig/rebalance_bonus/frequency_net_bonus.png" width="900" style="max-width: 100%;" alt="Fig 4">
+<img src="Shannons_Demon_fig/rebalance_bonus/frequency_net_bonus.png" width="900" style="max-width: 100%; display: block;" alt="Fig 4">
 Fig 4. Net rebalancing bonus after transaction cost
 
 두 표를 함께 보면 실행 규칙이 나온다. 무비용 이득은 간격에 거의 무관한데 ( 일간 +0.4752 %p 에서 연간 +0.3621 %p ) 회전율은 간격에 크게 반응하므로, 최적 간격은 이론이 아니라 비용이 정한다. 개인 투자자에게 흔한 25 bps 수준에서는 분기 리밸런싱이 가장 낫고, 50 bps 에서 일간 리밸런싱은 -0.3704 %p 로 부호가 바뀐다. 손익분기 비용이 일간 28.1 bps 와 연간 330.3 bps 사이에서 열 배 이상 벌어진다는 것이 이 표의 요지이다.
@@ -126,7 +126,7 @@ Table 5. Median CAGR advantage in %p by AR(1) coefficient, one-year volatility h
 | +0.20 | +0.4489 | -0.2145 | +0.7158 |
 | +0.30 | +0.4422 | -0.2202 | +0.7044 |
 
-<img src="Shannons_Demon_fig/rebalance_bonus/autocorrelation_effect.png" width="900" style="max-width: 100%;" alt="Fig 5">
+<img src="Shannons_Demon_fig/rebalance_bonus/autocorrelation_effect.png" width="900" style="max-width: 100%; display: block;" alt="Fig 5">
 Fig 5. Rebalancing advantage against return autocorrelation
 
 방향은 통념과 맞는다. 평균회귀에서 이득이 커지고 추세에서 작아진다. 그러나 $\phi$ 를 -0.30 에서 +0.30 까지 움직여도 중앙값은 0.0536 %p 만 변하며, 같은 표의 사분위 폭 0.9 %p 에 비하면 무시할 만하다.
@@ -162,13 +162,13 @@ Table 6. CAGR advantage over buy-and-hold in %p by policy and cost
 | band 10% | +5.8037 | +5.7757 | +5.7476 | +5.6635 | +5.5233 | 0.4035 |
 | band 20% | +5.7407 | +5.7269 | +5.7131 | +5.6715 | +5.6023 | 0.1991 |
 
-<img src="Shannons_Demon_fig/backtest/wealth_curves.png" width="900" style="max-width: 100%;" alt="Fig 6">
+<img src="Shannons_Demon_fig/backtest/wealth_curves.png" width="900" style="max-width: 100%; display: block;" alt="Fig 6">
 Fig 6. Wealth curves of the sampled policies on a log scale
 
-<img src="Shannons_Demon_fig/backtest/policy_cost_sweep.png" width="900" style="max-width: 100%;" alt="Fig 7">
+<img src="Shannons_Demon_fig/backtest/policy_cost_sweep.png" width="900" style="max-width: 100%; display: block;" alt="Fig 7">
 Fig 7. Net advantage of each calendar interval against transaction cost
 
-<img src="Shannons_Demon_fig/backtest/band_comparison.png" width="900" style="max-width: 100%;" alt="Fig 8">
+<img src="Shannons_Demon_fig/backtest/band_comparison.png" width="900" style="max-width: 100%; display: block;" alt="Fig 8">
 Fig 8. Advantage against turnover, calendar versus band rebalancing
 
 모든 정책이 모든 비용 수준에서 양수이며 최소값은 일간 리밸런싱의 50 bps 에서 +4.0141 %p 이다. 이 값들이 3.2 절의 1.00 %p 보다 훨씬 큰 이유는 두 종목의 volatility 가 45% 와 58% 로 가정치의 두 배 이상이기 때문이며, 리밸런싱이 더 잘 듣는다는 뜻이 아니다.
@@ -185,7 +185,7 @@ Table 7. Advantage in %p over 155 rolling 10-year windows at 5 bps
 | band 5% | +1.7539 | +0.6641 | +3.0945 | -4.0140 | +13.4372 | 0.8000 |
 | quarterly | +1.3864 | +0.2569 | +2.2629 | -4.1883 | +14.1212 | 0.7677 |
 
-<img src="Shannons_Demon_fig/backtest/rolling_windows.png" width="900" style="max-width: 100%;" alt="Fig 9">
+<img src="Shannons_Demon_fig/backtest/rolling_windows.png" width="900" style="max-width: 100%; display: block;" alt="Fig 9">
 Fig 9. Rebalancing advantage over rolling 10-year windows
 
 두 정책 모두 사분위 구간의 아래쪽 끝이 양수여서 구간을 언제 시작하든 중앙값 근처가 유지된다. 그러나 최악과 최선의 폭이 18 %p 를 넘고 구간의 다섯 중 하나 이상에서 이득이 음수이다. 이 표본은 종목 2개이며 둘 다 사후에 크게 오른 종목이므로, 5장의 수치는 기대값이 아니라 이 두 종목의 이 기간에 대한 사실로만 읽어야 한다.
