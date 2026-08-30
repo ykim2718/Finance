@@ -1,6 +1,6 @@
 # Kelly Criterion
 
-Rev. 3 | Created: 2026-08-30 | Updated: 2026-08-30 07:50 UTC
+Rev. 4 | Created: 2026-08-30 | Updated: 2026-08-30 15:41 UTC
 
 > **Goal** — 베팅 비중 하나가 장기 성장률을 얼마나 좌우하는지 수치로 확정한다. "적당히 걸어라" 가 아니라 "최적 비중이 얼마이고, 거기서 벗어나면 성장률과 손실 확률이 각각 얼마나 나빠지는가" 를 판단 기준으로 쓸 수 있게 한다.
 >
@@ -54,7 +54,7 @@ $f \ge f_{\text{ruin}}$ 이면 $W_{\text{down}} \le 0$ 이 되어 log 가 정의
 
 ## 3. Shape of the growth curve
 
-이 장의 수치는 $u = 2$, $d = 0.5$, $c = 1$, $p = 0.5$ 인 베팅에서 얻었다. 이 값에서 위험 자산 단독의 기하평균은 $\sqrt{u d} = 1$ 이므로 자산 자체의 장기 성장률은 0 이고, 성장은 오직 비중 선택에서 나온다. 계산 방법과 재현 절차는 [Appendix B](#appendix-b-reproduction) 에 있다.
+이 장의 수치는 $u = 2$, $d = 0.5$, $c = 1$, $p = 0.5$ 인 베팅에서 얻었다. 이 값에서 위험 자산 단독의 기하평균은 $\sqrt{u d} = 1$ 이므로 자산 자체의 장기 성장률은 0 이고, 성장은 오직 비중 선택에서 나온다. 계산 방법과 재현 절차는 [Appendix B](#appendix-b-the-kellypy-script) 에 있다.
 
 ### 3.1 Growth by fraction
 
@@ -146,9 +146,9 @@ Table 1 의 수치는 서로 독립인 세 방법으로 확인했다.
 - **ruin fraction** — 한 번의 하락으로 자산이 0 이하가 되는 최소 비중.
 - **underbetting** — 최적 비중보다 작게 거는 것.
 
-## Appendix B. Reproduction
+## Appendix B. The `kelly.py` script
 
-본문의 모든 수치는 `kelly.py` 한 번의 실행에서 나왔다. 이 부록은 그 실행을 재현하는 방법만 담는다.
+본문의 모든 수치는 `kelly.py` 한 번의 실행에서 나왔다. 이 부록은 그 실행을 재현하는 방법과 실행 방법을 담는다.
 
 #### Parameters
 
@@ -193,7 +193,7 @@ Table 1 의 해석해 열은 `growth_curve.csv` 에서, 시뮬레이션 열은 `
 - `--max-fraction` 이 2.4 절의 파산 비중에 닿으면 에러를 낸다. 정의역 밖을 조용히 잘라내면 사용자는 자기가 지정한 구간이 그대로 쓰인 줄 알게 된다.
 - $d \lt c \lt u$ 를 어기는 입력은 생성 시점에 에러로 막는다.
 
-## Appendix C. CLI (Command Line Options)
+#### Command line
 
 Option 없이 실행하면 script 이름과 version 을 출력한다. `-h` 로 전체 목록을, `-v` 로 version 을 본다. `--output-folder` 는 필수이다. `kelly.py` 는 다른 script 를 import 하지 않으며 이 문서 옆의 `src` folder 에 있다. 아래 명령은 이 문서가 있는 folder 를 기준으로 한다.
 
@@ -220,7 +220,7 @@ Table 3. CLI options of `kelly.py`
 | `--chunk-size` | int | 4000 | no | 한 번에 계산할 경로 수 |
 | `--seed` | int | 20260829 | no | 난수 seed |
 
-## Appendix D. Backtest on real prices
+## Appendix C. Backtest on real prices
 
 본문의 수치는 승률과 배당률을 정확히 아는 베팅에서 나왔다. 4.2 절은 그 가정이 깨지면 무슨 일이 생기는지를 목록으로만 적었다. 이 부록은 그 중 두 가지를 실제 시세로 확인한다. 최적 비중이 실제로 성장률을 최대화하는지, 그리고 과거 자료로 추정한 비중을 앞으로 적용했을 때도 통하는지이다.
 
