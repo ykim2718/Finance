@@ -1,18 +1,19 @@
 """
 Wealth under a deterministic alternating price path.
 
-A price rises by a fixed rate on odd days and falls by the same rate on even days, so the two-day
-cycle returns the price to a level below where it started. This module tracks what a fixed fraction
-of wealth staked on that path is worth over time, for several fractions at once, and reports the
-closed-form multiplier that explains the result.
+A price moves by one rate on odd days and the opposite way by another rate on even days, so the
+two-day cycle returns it to a fixed level. This module tracks what a fixed fraction of wealth
+staked on that path is worth over time, for several fractions at once, and reports the closed-form
+multiplier that explains the result.
 
 Changelog:
 - 0.0.0 Initial release.
 - 0.1.0 Accept a zero fraction, so the all-cash baseline can be drawn alongside the staked paths.
+- 0.2.0 Let the down day come first and the two rates differ, so a flat price path can be traced.
 """
 
 __author__ = 'yRocket'
-__version__ = "0.1.0.2026.8.30"
+__version__ = "0.2.0.2026.8.30"
 
 import argparse
 import enum
@@ -29,6 +30,7 @@ from matplotlib.colors import TABLEAU_COLORS
 matplotlib.use('Agg')  # headless rendering; batch runs have no display server
 
 __all__ = [
+    'FirstDay',
     'Column',
     'PathSpec',
     'AlternatingPath',
@@ -42,12 +44,20 @@ FIGSIZE = (11.0, 4.5)
 DPI = 300
 PALETTE = tuple(TABLEAU_COLORS.values())
 PRICE_COLOUR = 'tab:blue'
-DEFAULT_UP_RATE = 0.10
+DEFAULT_UP_RATE = 1.0 / 9.0  # exactly recovers a 10% fall, so the price path is flat
 DEFAULT_DOWN_RATE = 0.10
 DEFAULT_N_DAYS = 100
 DEFAULT_INITIAL_PRICE = 1.0
 DEFAULT_INITIAL_WEALTH = 100.0
 DEFAULT_FRACTIONS = (0.00, 0.25, 0.50, 0.75, 1.00)
+DEFAULT_FIRST_DAY = 'down'
+
+
+class FirstDay(enum.StrEnum):
+    """Which of the two days of a cycle comes first."""
+
+    UP = 'up'
+    DOWN = 'down'
 
 
 class Column(enum.StrEnum):
@@ -71,6 +81,7 @@ class PathSpec:
     n_days: int
     initial_price: float
     initial_wealth: float
+    first_day: FirstDay
 
     def __post_init__(self) -> None:
         if self.up_rate <= 0.0:
@@ -101,9 +112,14 @@ class AlternatingPath:
         return self._spec
 
     def daily_returns(self) -> np.ndarray:
-        """Signed simple return of each day, up on odd days and down on even days."""
+        """Signed simple return of each day, the two days of a cycle alternating."""
         days = np.arange(self._spec.n_days)
-        return np.where(days % 2 == 0, self._spec.up_rate, -self._spec.down_rate)
+        leads_up = self._spec.first_day is FirstDay.UP
+        first, second = (
+            (self._spec.up_rate, -self._spec.down_rate) if leads_up
+            else (-self._spec.down_rate, self._spec.up_rate)
+        )
+        return np.where(days % 2 == 0, first, second)
 
     def prices(self) -> np.ndarray:
         """Price on day 0 through day `n_days`, so the array is one longer than the return array."""
@@ -126,7 +142,7 @@ class AlternatingPath:
         return self._spec.initial_wealth * np.concatenate(([1.0], np.cumprod(step)))
 
     def cycle_multiplier(self, fraction: float) -> float:
-        """Closed-form wealth multiplier of one up day followed by one down day."""
+        """Closed-form wealth multiplier of one full two-day cycle; the order does not change it."""
         return (1.0 + fraction * self._spec.up_rate) * (1.0 - fraction * self._spec.down_rate)
 
 
@@ -176,7 +192,7 @@ def plot_paths(frame: pd.DataFrame, output_path: pathlib.Path) -> None:
     ax_wealth.set_ylabel('Wealth')
     ax_wealth.set_title('(b) Wealth by bet fraction')
     ax_wealth.grid(alpha=0.3)
-    ax_wealth.legend(loc='lower left')
+    ax_wealth.legend(loc='best')
 
     fig.tight_layout()
     fig.savefig(output_path, dpi=DPI)
@@ -213,6 +229,8 @@ def parse_args() -> argparse.Namespace:
                         help='wealth on day 0')
     parser.add_argument('--fractions', type=float, nargs='+', default=list(DEFAULT_FRACTIONS),
                         help='bet fractions traced on the wealth panel; 0 draws the all-cash baseline')
+    parser.add_argument('--first-day', type=FirstDay, choices=list(FirstDay), default=DEFAULT_FIRST_DAY,
+                        help='which day of the cycle comes first')
 
     args = parser.parse_args()
     parent = args.output_folder.parent if args.output_folder.parent != pathlib.Path('') else pathlib.Path('.')
@@ -234,6 +252,7 @@ def main() -> int:
         n_days=args.n_days,
         initial_price=args.initial_price,
         initial_wealth=args.initial_wealth,
+        first_day=args.first_day,
     )
     path = AlternatingPath(spec)
     fractions = tuple(args.fractions)
