@@ -9,10 +9,11 @@ simulation of the same game.
 Changelog:
 - 0.0.0 Initial release.
 - 0.1.0 Simulate the game here instead of importing it, so the module stands on its own.
+- 0.2.0 Add the bet-size zone chart and the formula card used by section 4 of the document.
 """
 
 __author__ = 'yRocket'
-__version__ = "0.1.0.2026.8.30"
+__version__ = "0.2.0.2026.8.30"
 
 import argparse
 import enum
@@ -37,6 +38,8 @@ __all__ = [
     'simulate_terminal_wealth',
     'build_curve_frame',
     'build_simulation_frame',
+    'plot_growth_zones',
+    'plot_formula_card',
     'plot_growth_curve',
     'plot_growth_violin',
 ]
@@ -59,6 +62,13 @@ DEFAULT_N_PATHS: int = 20000
 DEFAULT_CHUNK_SIZE: int = 4000
 DEFAULT_SEED: int = 20260829
 OPTIMUM_AGREEMENT_TOLERANCE: float = 1e-6
+ZONE_FIGSIZE: tuple = (9.0, 6.0)        # 3:2, rendered at 600 x 400
+CARD_FIGSIZE: tuple = (9.0, 9.0)        # 1:1, rendered at 600 x 600
+ZONE_EDGES: tuple = (0.0, 0.5, 1.0, 2.0)   # in multiples of the optimum
+ZONE_LABELS: tuple = ('Conservative', 'Aggressive', 'Over-aggressive', 'Insane')
+ZONE_COLOURS: tuple = ('tab:olive', 'tab:orange', 'tab:red', 'dimgrey')
+ZONE_TAIL: float = 2.4                  # right edge of the plot, in multiples of the optimum
+ZONE_FLOOR: float = -1.4                # bottom of the y axis, in multiples of the peak growth
 OUTPUT_STEM: str = 'kelly'
 
 
@@ -214,6 +224,81 @@ def build_simulation_frame(spec: BetSpec, fractions: tuple, n_periods: int, n_pa
     return pd.concat(frames, ignore_index=True)
 
 
+def plot_growth_zones(analyzer: KellyAnalyzer, optimum: float, output_path: pathlib.Path) -> None:
+    """
+    Draw the growth curve split into bet-size zones at half, one and two times the optimum.
+
+    The zones are cut at multiples of the optimum rather than at fixed fractions, so the picture
+    holds for any bet the analyzer describes.
+    """
+    if optimum <= 0.0:
+        raise ValueError(f"optimum must be positive to scale the zones; got {optimum!r}.")
+    font_size = BASE_FONT_SIZE * ZONE_FIGSIZE[0] / REFERENCE_WIDTH
+    limit = min(ZONE_TAIL * optimum, analyzer.spec.ruin_fraction * (1.0 - OPTIMUM_AGREEMENT_TOLERANCE))
+    fractions = np.linspace(0.0, limit, 400)
+    growth = analyzer.log_growth(fractions)
+
+    fig, axis = plt.subplots(figsize=ZONE_FIGSIZE)
+    edges = [edge * optimum for edge in ZONE_EDGES] + [limit]
+    for index, (left, right) in enumerate(zip(edges[:-1], edges[1:])):
+        inside = (fractions >= left) & (fractions <= right)
+        axis.fill_between(fractions[inside], 0.0, growth[inside],
+                          color=ZONE_COLOURS[index], alpha=0.55, linewidth=0.0)
+        axis.text(0.5 * (left + right), 0.5 * np.nanmax(growth) * 0.22, ZONE_LABELS[index],
+                  ha='center', va='center', fontsize=font_size, fontweight='bold')
+    axis.plot(fractions, growth, color='black', linewidth=2.0)
+    axis.axhline(0.0, color='black', linewidth=1.0)
+    axis.set_xticks(edges[:-1])
+    axis.set_xticklabels(['0', 'half Kelly', 'Kelly', 'twice Kelly'])
+    axis.set_xlim(0.0, limit)
+    peak = float(np.nanmax(growth))
+    axis.set_ylim(ZONE_FLOOR * peak, 1.25 * peak)
+    axis.set_xlabel('Fraction staked', fontsize=font_size + 1)
+    axis.set_ylabel('Log growth per period', fontsize=font_size + 1)
+    axis.tick_params(labelsize=font_size)
+    for spine in ('top', 'right'):
+        axis.spines[spine].set_visible(False)
+    fig.tight_layout()
+    fig.savefig(output_path, dpi=FIGURE_DPI, facecolor='white')
+    plt.close(fig)
+
+
+def plot_formula_card(spec: BetSpec, optimum: float, output_path: pathlib.Path) -> None:
+    """Draw the closed-form optimum and the meaning of each symbol on a plain white square."""
+    font_size = BASE_FONT_SIZE * CARD_FIGSIZE[0] / REFERENCE_WIDTH
+    fig, axis = plt.subplots(figsize=CARD_FIGSIZE)
+    axis.set_axis_off()
+    axis.set_xlim(0.0, 1.0)
+    axis.set_ylim(0.0, 1.0)
+
+    axis.text(0.5, 0.93, 'Kelly criterion', ha='center', va='center',
+              fontsize=font_size + 8, fontweight='bold')
+    axis.text(0.5, 0.76, r'$f^{*} = -\dfrac{c\,[\,p\,A + (1-p)\,B\,]}{A\,B}$',
+              ha='center', va='center', fontsize=font_size + 12)
+    axis.text(0.5, 0.62, r'$A = u - c, \qquad B = d - c$',
+              ha='center', va='center', fontsize=font_size + 4)
+
+    symbols = [
+        (r'$f^{*}$', 'fraction of wealth to stake'),
+        (r'$u$', 'multiplier when the bet wins'),
+        (r'$d$', 'multiplier when the bet loses'),
+        (r'$c$', 'multiplier of the cash held'),
+        (r'$p$', 'probability that the bet wins'),
+    ]
+    for index, (symbol, meaning) in enumerate(symbols):
+        height = 0.46 - index * 0.075
+        axis.text(0.30, height, symbol, ha='right', va='center', fontsize=font_size + 4)
+        axis.text(0.35, height, meaning, ha='left', va='center', fontsize=font_size + 2)
+
+    axis.text(0.5, 0.05,
+              f"this document: u={spec.up_factor:g}, d={spec.down_factor:g}, "
+              f"c={spec.cash_factor:g}, p={spec.up_prob:g}  " + r'$\Rightarrow$' +
+              f"  f* = {optimum:.3f}",
+              ha='center', va='center', fontsize=font_size + 1)
+    fig.savefig(output_path, dpi=FIGURE_DPI, facecolor='white')
+    plt.close(fig)
+
+
 def plot_growth_curve(curve_frame: pd.DataFrame, simulation_frame: pd.DataFrame,
                       optimum: float, output_path: pathlib.Path) -> None:
     """Draw the analytic growth curve with the optimum marked and the simulated medians overlaid."""
@@ -361,6 +446,10 @@ if __name__ == '__main__':
                       optimum=kelly_fraction, output_path=result_folder / 'growth_curve.png')
     plot_growth_violin(simulation_frame=simulation_df,
                        output_path=result_folder / 'growth_violin.png')
+    plot_growth_zones(analyzer=kelly_analyzer, optimum=kelly_fraction,
+                      output_path=result_folder / 'growth_zones.png')
+    plot_formula_card(spec=bet_spec, optimum=kelly_fraction,
+                      output_path=result_folder / 'formula_card.png')
 
     grid_best = curve_df.loc[curve_df[str(Column.LOG_GROWTH)].idxmax()]
     print(f"\nbest fraction on the grid: {grid_best[str(Column.FRACTION)]:.4f} "
