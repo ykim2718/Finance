@@ -1,6 +1,6 @@
 # Kelly Criterion
 
-Rev. 9 | Created: 2026-08-30 | Updated: 2026-08-30 15:57 UTC
+Rev. 10 | Created: 2026-08-30 | Updated: 2026-08-30 16:13 UTC
 
 > **Goal** — 베팅 비중 하나가 장기 성장률을 얼마나 좌우하는지 수치로 확정한다. "적당히 걸어라" 가 아니라 "최적 비중이 얼마이고, 거기서 벗어나면 성장률과 손실 확률이 각각 얼마나 나빠지는가" 를 판단 기준으로 쓸 수 있게 한다.
 >
@@ -54,7 +54,7 @@ $f \ge f_{\text{ruin}}$ 이면 $W_{\text{down}} \le 0$ 이 되어 log 가 정의
 
 ## 3. Shape of the growth curve
 
-이 장의 수치는 $u = 2$, $d = 0.5$, $c = 1$, $p = 0.5$ 인 베팅에서 얻었다. 이 값에서 위험 자산 단독의 기하평균은 $\sqrt{u d} = 1$ 이므로 자산 자체의 장기 성장률은 0 이고, 성장은 오직 비중 선택에서 나온다. 계산 방법과 재현 절차는 [Appendix B](#appendix-b-the-kellypy-script) 에 있다.
+이 장의 수치는 $u = 2$, $d = 0.5$, $c = 1$, $p = 0.5$ 인 베팅에서 얻었다. 이 값에서 위험 자산 단독의 기하평균은 $\sqrt{u d} = 1$ 이므로 자산 자체의 장기 성장률은 0 이고, 성장은 오직 비중 선택에서 나온다. 계산 방법과 재현 절차는 [Appendix C](#appendix-c-the-kellypy-script) 에 있다.
 
 ### 3.1 Growth by fraction
 
@@ -180,13 +180,65 @@ $$\Delta g = 0.5 \ln \frac{1.5000}{1.2500} + 0.5 \ln \frac{0.7500}{0.8750} = 0.5
 - **ruin fraction** — 한 번의 하락으로 자산이 0 이하가 되는 최소 비중.
 - **underbetting** — 최적 비중보다 작게 거는 것.
 
-## Appendix B. The `kelly.py` script
+## Appendix B. A path with no edge
+
+본문의 게임은 배수가 2배와 반토막이라 값이 크다. 이 부록은 훨씬 얌전한 가격 경로 하나를 끝까지 따라가, 우위가 없을 때 비중이 무엇을 하는지 보인다. 주가는 1 에서 출발해 홀수 날 10% 오르고 짝수 날 10% 내리며, 이를 100일 반복한다. 투자금은 100 이고, 매일 자산의 고정 비율 $f$ 를 그 주식에 두고 나머지는 현금으로 둔다. 현금 배수는 본문과 같이 $c = 1$ 이다.
+
+<img src="Kelly_Criterion_fig/alternating/wealth_paths.png" width="900" style="max-width: 100%; display: block;" alt="Fig 4">
+Fig 4. Price path and the wealth it produces at four bet fractions
+
+Table 2. Wealth after 100 days by bet fraction, starting from 100
+| Bet fraction | Two-day multiplier | Final wealth | Total return |
+|---|---|---|---|
+| 0.25 | 0.999375 | 96.9224 | -3.0776% |
+| 0.50 | 0.997500 | 88.2359 | -11.7641% |
+| 0.75 | 0.994375 | 75.4241 | -24.5760% |
+| 1.00 | 0.990000 | 60.5006 | -39.4994% |
+
+네 비중 모두 손실이며, 비중이 클수록 손실이 크다. 이틀이 한 주기이므로 100일은 주기 50회이고, 한 주기의 배수는 다음과 같다.
+
+$$(1 + 0.10 f)(1 - 0.10 f) = 1 - 0.01 f^2$$
+
+$f$ 가 어떤 양수여도 이 값은 1 보다 작고, $f$ 가 커질수록 작아진다. 100일 뒤 자산은 곧 다음 값이다.
+
+$$W_{100} = 100 \left(1 - 0.01 f^2\right)^{50}$$
+
+$f = 1.00$ 을 넣으면 $100 \times 0.99^{50} = 60.5006$ 으로 Table 2 의 마지막 행과 같다.
+
+Bet fraction 1.00 은 투자금 전액을 그 주식에 두는 것을 뜻한다. 현금 몫이 0 이 되므로 자산 경로는 주가 경로에 100 을 곱한 것과 같다. Fig 4 의 (a) 가 100일 뒤 0.605006 에서 끝나는 것과 (b) 의 $f = 1.00$ 선이 60.5006 에서 끝나는 것이 같은 수이다. 다만 이 부록에서 1.00 이 비중의 상한은 아니다. 하루 최대 손실이 10% 이므로 2.4 절의 파산 비중은 $1 / 0.10 = 10$ 이고, 그 아래라면 빌린 돈을 더해 1.00 을 넘길 수 있다. 그럴수록 손실만 커진다.
+
+이 경로에 우위가 없기 때문이다. 상승과 하락이 같은 확률로 오는 베팅으로 보면 $u = 1.10$, $d = 0.90$, $c = 1$, $p = 0.5$ 이므로 2.3 절의 식에서 분자의 $p A + (1-p) B$ 가 $0.5 \times 0.10 + 0.5 \times (-0.10) = 0$ 이 되어 $f^{\ast} = 0$ 이다. 최적 비중이 0 이라는 것은 걸지 말라는 뜻이며, 0 보다 큰 모든 비중이 overbetting 이다. Table 2 는 그 대가를 비중별로 적은 것이다.
+
+산술평균과 기하평균의 차이로 읽어도 같다. 하루 수익률의 산술평균은 $f = 1.00$ 에서 $(+10\% - 10\%) / 2 = 0$ 이지만 기하평균은 $\sqrt{1.10 \times 0.90} = 0.994987$ 로 1 보다 작다. 이 격차가 변동성이 성장률에서 빼앗아 가는 몫이며, 비중을 $f$ 로 줄이면 변동폭이 $f$ 배가 되므로 그 몫은 $f^2$ 배로 줄어든다. Table 2 의 두 번째 열이 $f^2$ 에 비례해 1 에서 멀어지는 것이 그 관계이다.
+
+#### Reproduction
+
+`alternating.py` 는 이 문서 옆의 `src` folder 에 있으며 다른 script 를 import 하지 않는다. Option 없이 실행하면 script 이름과 version 을 출력한다. `-h` 로 전체 목록을, `-v` 로 version 을 본다. `--output-folder` 는 필수이며 그 아래 `alternating` folder 가 만들어진다. 아래 명령은 이 문서가 있는 folder 를 기준으로 하며, `wealth_paths.csv`, `summary.csv`, `wealth_paths.png` 를 남긴다.
+
+```bash
+python3 src/alternating.py --output-folder Kelly_Criterion_fig
+```
+
+Table 3. CLI options of `alternating.py`
+| Option | Type | Default | Required | Description |
+|---|---|---|---|---|
+| `--output-folder` | path | — | yes | 산출물 root |
+| `--up-rate` | float | 0.10 | no | 상승일의 수익률 |
+| `--down-rate` | float | 0.10 | no | 하락일의 손실률 |
+| `--n-days` | int | 100 | no | 경로의 길이 |
+| `--initial-price` | float | 1.0 | no | 0일의 주가 |
+| `--initial-wealth` | float | 100.0 | no | 0일의 자산 |
+| `--fractions` | float list | 0.25 0.50 0.75 1.00 | no | 자산 경로를 그릴 비중 |
+
+파산 비중 이상의 `--fractions` 는 에러로 막는다. 그 비중에서는 하락일 하루가 자산을 0 이하로 만들어 이후의 경로가 뜻을 잃기 때문이다.
+
+## Appendix C. The `kelly.py` script
 
 본문의 모든 수치는 `kelly.py` 한 번의 실행에서 나왔다. 이 부록은 그 실행을 재현하는 방법과 실행 방법을 담는다.
 
 #### Parameters
 
-Table 2. Bet and simulation parameters of the run cited in this document
+Table 4. Bet and simulation parameters of the run cited in this document
 | Parameter | Value | Meaning |
 |---|---|---|
 | `--up-factor` | 2.0 | 상승 시 위험 자산 배수 |
@@ -239,7 +291,7 @@ python3 src/kelly.py --output-folder . --up-prob 0.55 --sim-fractions 0.1 0.2 0.
 
 `--output-folder` 로 준 folder 아래 `kelly` folder 가 만들어지므로, 본문이 인용하는 `Kelly_Criterion_fig` 로 쓰려면 그 folder 이름을 바꾼다.
 
-Table 3. CLI options of `kelly.py`
+Table 5. CLI options of `kelly.py`
 | Option | Type | Default | Required | Description |
 |---|---|---|---|---|
 | `--output-folder` | path | — | yes | 산출물 root |
@@ -255,11 +307,11 @@ Table 3. CLI options of `kelly.py`
 | `--chunk-size` | int | 4000 | no | 한 번에 계산할 경로 수 |
 | `--seed` | int | 20260829 | no | 난수 seed |
 
-## Appendix C. Backtest on real prices
+## Appendix D. Backtest on real prices
 
 본문의 수치는 승률과 배당률을 정확히 아는 베팅에서 나왔다. 4.3 절은 그 가정이 깨지면 무슨 일이 생기는지를 목록으로만 적었다. 이 부록은 그 중 두 가지를 실제 시세로 확인한다. 최적 비중이 실제로 성장률을 최대화하는지, 그리고 과거 자료로 추정한 비중을 앞으로 적용했을 때도 통하는지이다.
 
-Table 4. Price data and backtest settings
+Table 6. Price data and backtest settings
 | Item | Value |
 |---|---|
 | Source | Kaggle, Stock Market Dataset ( jacksoncrow/stock-market-dataset ) |
@@ -277,7 +329,7 @@ Table 4. Price data and backtest settings
 
 전체 표본의 추정치는 drift +26.9716%, volatility 46.3352% 이고, 여기서 나오는 최적 비중은 1.2563 이다. 실제로 성장률이 가장 높았던 비중은 1.1500 이다. 두 값의 차이는 0.11 이며, 추정 비중에서 실제로 얻은 성장률은 16.3673% 로 실제 최적점의 16.5795% 보다 0.2122 %p 낮다.
 
-Table 5. Realised against predicted annual log growth in %, full sample
+Table 7. Realised against predicted annual log growth in %, full sample
 | Fraction | Realised | Predicted | Gap |
 |---|---|---|---|
 | 0.25 | +6.1321 | +6.0720 | +0.0602 |
@@ -290,8 +342,8 @@ Table 5. Realised against predicted annual log growth in %, full sample
 | 1.60 | +10.1875 | +15.6736 | -5.4860 |
 | 1.65 | ruined | +15.2777 | — |
 
-<img src="Kelly_Criterion_fig/kelly_backtest/growth_by_fraction.png" width="900" style="max-width: 100%; display: block;" alt="Fig 4">
-Fig 4. Realised growth against bet size, with the curve the full-sample estimate predicts
+<img src="Kelly_Criterion_fig/kelly_backtest/growth_by_fraction.png" width="900" style="max-width: 100%; display: block;" alt="Fig 5">
+Fig 5. Realised growth against bet size, with the curve the full-sample estimate predicts
 
 식은 최적점 아래에서 잘 맞는다. 비중 1.00 까지 실제와 예측의 차이는 0.13 %p 를 넘지 않는다. 최적점 위에서는 빠르게 벌어져 1.40 에서 1.37 %p, 1.60 에서 5.49 %p 이며, 1.65 에서는 포트폴리오가 완전히 사라지는데 식은 여전히 +15.2777% 를 예측한다.
 
@@ -305,7 +357,7 @@ Fig 4. Realised growth against bet size, with the curve the full-sample estimate
 
 앞의 수치는 전체 기간을 다 본 뒤에 계산한 것이라 실제로 쓸 수 없는 값이다. 여기서는 각 구간마다 직전 5년만 보고 비중을 정한 뒤 그 다음 1년에 적용했다. 추정은 적용 구간을 보지 않는다.
 
-Table 6. Out-of-sample annual log growth in % over 34 windows, 1985-12-10 to 2019-12-05
+Table 8. Out-of-sample annual log growth in % over 34 windows, 1985-12-10 to 2019-12-05
 | Policy | Median | 25th percentile | 75th percentile | Worst | Best | Win rate | Median max drawdown |
 |---|---|---|---|---|---|---|---|
 | full Kelly | +19.4625 | -17.0711 | +61.2995 | -108.8403 | +197.3414 | 0.6765 | -24.1385 |
@@ -313,12 +365,12 @@ Table 6. Out-of-sample annual log growth in % over 34 windows, 1985-12-10 to 201
 | fixed 0.50 | +12.0332 | +0.8005 | +24.2183 | -31.3947 | +61.0758 | 0.7647 | -9.4107 |
 | fixed 1.00 | +18.8846 | -0.4611 | +44.9537 | -90.2913 | +116.5211 | 0.7353 | -18.6601 |
 
-<img src="Kelly_Criterion_fig/kelly_backtest/walk_forward.png" width="900" style="max-width: 100%; display: block;" alt="Fig 5">
-Fig 5. Estimated Kelly fraction by window and the distribution of out-of-sample growth
+<img src="Kelly_Criterion_fig/kelly_backtest/walk_forward.png" width="900" style="max-width: 100%; display: block;" alt="Fig 6">
+Fig 6. Estimated Kelly fraction by window and the distribution of out-of-sample growth
 
 추정된 최적 비중은 구간에 따라 -0.3923 에서 4.7991 까지 흔들렸고 중앙값은 1.5018 이다. 34개 구간 중 16개에서 추정값이 파산 비중 1.6500 을 넘었고, 2개 구간에서는 음수가 되어 공매도를 지시했다. 2007-12-03 에 시작하는 구간에서는 추정값 4.7991 이 실제로 적용되어 포트폴리오가 사라졌다.
 
-Table 6 의 중앙값만 보면 full Kelly 가 +19.4625% 로 가장 높다. 그러나 사분위 구간이 -17.0711 에서 +61.2995 로 가장 넓고, 최악 구간은 -108.8403% 이며, 낙폭 중앙값도 -24.1385% 로 가장 크다. 고정 0.50 은 중앙값이 +12.0332% 로 낮지만 사분위 구간의 아래쪽이 양수이고 낙폭이 -9.4107% 에 그친다.
+Table 8 의 중앙값만 보면 full Kelly 가 +19.4625% 로 가장 높다. 그러나 사분위 구간이 -17.0711 에서 +61.2995 로 가장 넓고, 최악 구간은 -108.8403% 이며, 낙폭 중앙값도 -24.1385% 로 가장 크다. 고정 0.50 은 중앙값이 +12.0332% 로 낮지만 사분위 구간의 아래쪽이 양수이고 낙폭이 -9.4107% 에 그친다.
 
 half Kelly 가 고정 0.50 보다 나쁜 것은 처음 보면 이상하다. 원인은 half Kelly 가 추정값의 절반이라는 데 있다. 추정이 음수인 두 구간에서 half Kelly 는 공매도를 하고, 그 구간에 주가가 오르면서 최악값 -320.4731% 를 만들었다. 추정값을 반으로 줄이는 것은 추정의 크기 오차만 줄일 뿐 부호 오차는 줄이지 못한다.
 
@@ -341,7 +393,7 @@ half Kelly 가 고정 0.50 보다 나쁜 것은 처음 보면 이상하다. 원�
 
 파산은 에러가 아니라 결과로 기록된다. `ruined` 열이 참인 행은 성장률이 정의되지 않아 비어 있으며, 표에서 제외되지 않고 개수가 보고된다. 파산을 조용히 걸러내면 가장 중요한 결과가 사라지기 때문이다.
 
-Table 7. CLI options of `kelly_backtest.py`
+Table 9. CLI options of `kelly_backtest.py`
 | Option | Type | Default | Required | Description |
 |---|---|---|---|---|
 | `--output-folder` | path | — | yes | 산출물 root |
