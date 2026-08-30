@@ -1,6 +1,6 @@
 # Shannon's Demon
 
-Rev. 2 | Created: 2026-08-29 | Updated: 2026-08-29 22:26 UTC
+Rev. 3 | Created: 2026-08-29 | Updated: 2026-08-30 02:28 UTC
 
 > **Goal** — 리밸런싱이 만드는 성장률 이득의 크기를 수치로 확정한다. "리밸런싱은 좋다" 가 아니라 "연 몇 %p 이며 거래비용 몇 bps 에서 사라지는가" 를 판단 기준으로 쓸 수 있게 한다.
 >
@@ -102,6 +102,8 @@ $\phi$ 를 바꿀 때마다 난수 generator 를 seed 로 되감아 모든 $\phi
 
 앞 세 script 는 외부 자료를 읽지 않는다. 모든 입력은 CLI option 으로 주어지는 parameter 이며, 자료는 seed 가 고정된 generator 에서 생성한다. 같은 seed 와 같은 option 이면 결과가 재현된다.
 
+Table 1. Coin-flip game parameters used by `shannon_demon.py` and `kelly.py`
+
 | Parameter | Value | Meaning |
 |---|---|---|
 | `--up-factor` | 2.0 | 상승 시 주식 배수 |
@@ -113,7 +115,7 @@ $\phi$ 를 바꿀 때마다 난수 generator 를 seed 로 되감아 모든 $\phi
 | `--n-paths` | 20,000 | Monte Carlo 경로 수 |
 | `--seed` | 20260829 | 난수 seed |
 
-Table 1. Coin-flip game parameters used by `shannon_demon.py` and `kelly.py`
+Table 2. Lognormal market parameters used by `rebalance_bonus.py`
 
 | Parameter | Value | Meaning |
 |---|---|---|
@@ -129,9 +131,9 @@ Table 1. Coin-flip game parameters used by `shannon_demon.py` and `kelly.py`
 | `--phi-grid` | -0.30 ~ +0.30 | AR(1) 계수 9개 |
 | `--autocorr-normalization` | horizon | volatility 고정 기준 |
 
-Table 2. Lognormal market parameters used by `rebalance_bonus.py`
-
 `backtest.py` 만 외부 자료를 읽는다. 자료는 Kaggle 의 Stock Market Dataset 이며, 그 dataset 자체는 Yahoo Finance 에서 수집된 2020-04-02 snapshot 이다.
+
+Table 3. Price data read by `backtest.py`
 
 | Item | Value |
 |---|---|
@@ -141,8 +143,6 @@ Table 2. Lognormal market parameters used by `rebalance_bonus.py`
 | Aligned rows | 5,758 |
 | Target weights | 0.50 / 0.50 |
 | Rolling window | 10 years, 21-day stride, 5 bps cost |
-
-Table 3. Price data read by `backtest.py`
 
 ## 4. Output
 
@@ -210,12 +210,12 @@ Shannons_Demon_fig/
 
 ### 5.1 Coin-flip game
 
+Table 4. Terminal wealth after 100 periods, 20,000 paths, from `terminal_wealth.csv`
+
 | Strategy | Median terminal wealth | Mean terminal wealth | Median return per period | 5th percentile | 95th percentile | Loss probability |
 |---|---|---|---|---|---|---|
 | rebalanced | 361.0989 | 8.130e+04 | +6.0660% | 1.411 | 9.244e+04 | 0.04555 |
 | buy_and_hold | 1.0000 | 7.217e+06 | +0.0000% | 0.500 | 3.277e+04 | 0.46685 |
-
-Table 4. Terminal wealth after 100 periods, 20,000 paths, from `terminal_wealth.csv`
 
 주식 단독의 기대 log 성장률은 정확히 0 이다. buy-and-hold 의 기간당 중앙 수익률은 +0.0000% 로 이 값과 일치하며 중앙 최종자산은 1.0000 이다. 리밸런싱 포트폴리오의 중앙 최종자산은 361.0989 로 기간당 +6.0660% 이다. 평균은 두 전략 모두 중앙값보다 몇 자릿수 크며, buy-and-hold 쪽이 더 크다.
 
@@ -231,6 +231,8 @@ Fig 2. Distribution of log growth per period over 20,000 paths
 
 closed form 최적 비중은 0.500000, 수치 최적화 값도 0.500000 이며 둘의 차이는 3.33e-16 이다.
 
+Table 5. Growth rate by stock fraction, from `growth_curve.csv` and `simulated_log_growth.csv`
+
 | Fraction | Analytic log growth | Analytic return per period | Simulated median | Loss probability |
 |---|---|---|---|---|
 | 10% | +0.022008 | +2.2252% | +0.022008 | 0.00085 |
@@ -240,8 +242,6 @@ closed form 최적 비중은 0.500000, 수치 최적화 값도 0.500000 이며 �
 | 60% | +0.056664 | +5.8301% | — | — |
 | 75% | +0.044806 | +4.5825% | +0.044806 | 0.18680 |
 | 100% | +0.000000 | +0.0000% | +0.000000 | 0.45305 |
-
-Table 5. Growth rate by stock fraction, from `growth_curve.csv` and `simulated_log_growth.csv`
 
 40% 와 60% 는 해석해 격자에만 있고 시뮬레이션 대상 비중이 아니므로 두 열을 `—` 로 둔다.
 
@@ -257,13 +257,13 @@ Fig 4. Simulated growth distribution by bet size
 
 ### 5.3 Gross bonus at realistic parameters
 
+Table 6. Closed-form gross bonus in %p of annual log growth, from `bonus_grid.csv`
+
 | Annual volatility | rho = -0.90 | rho = 0.00 | rho = +0.90 |
 |---|---|---|---|
 | 10% | 0.47 | 0.25 | 0.03 |
 | 20% | 1.90 | 1.00 | 0.10 |
 | 60% | 17.10 | 9.00 | 0.90 |
-
-Table 6. Closed-form gross bonus in %p of annual log growth, from `bonus_grid.csv`
 
 기본 parameter ( volatility 20%, correlation +0.20 ) 에서 closed form 값은 0.8000 %p 이다. 일간 리밸런싱 simulation 이 개별 자산 성장률의 가중평균 대비 얻은 값은 0.8006 %p 로, 두 값의 차이는 0.0006 %p 이다. 같은 실행에서 buy-and-hold 가 비중 표류만으로 같은 기준 대비 얻은 값은 0.3459 %p 이다.
 
@@ -272,6 +272,8 @@ Table 6. Closed-form gross bonus in %p of annual log growth, from `bonus_grid.cs
 Fig 5. Gross rebalancing bonus over volatility and correlation
 
 ### 5.4 Net bonus after transaction cost
+
+Table 7. Median CAGR advantage over buy-and-hold in %p, from `frequency_net_bonus.csv`
 
 | Rebalancing interval | 0 bps | 5 bps | 10 bps | 25 bps | 50 bps |
 |---|---|---|---|---|---|
@@ -282,7 +284,7 @@ Fig 5. Gross rebalancing bonus over volatility and correlation
 | semiannual (126) | +0.4156 | +0.4091 | +0.4025 | +0.3808 | +0.3422 |
 | annual (252) | +0.3621 | +0.3566 | +0.3512 | +0.3351 | +0.3072 |
 
-Table 7. Median CAGR advantage over buy-and-hold in %p, from `frequency_net_bonus.csv`
+Table 8. Turnover, break-even cost and win rate by rebalancing interval, from `frequency_net_bonus.csv`
 
 | Rebalancing interval | Median annual turnover | Break-even cost | Win rate at 0 bps |
 |---|---|---|---|
@@ -293,8 +295,6 @@ Table 7. Median CAGR advantage over buy-and-hold in %p, from `frequency_net_bonu
 | semiannual (126) | 0.1419 | 282.1 bps | 0.6860 |
 | annual (252) | 0.0995 | 330.3 bps | 0.6770 |
 
-Table 8. Turnover, break-even cost and win rate by rebalancing interval, from `frequency_net_bonus.csv`
-
 거래비용이 0 일 때 이득은 간격에 거의 무관하다. 일간 +0.4752 %p 에서 연간 +0.3621 %p 사이이다. 비용이 붙으면 순서가 바뀐다. 50 bps 에서 일간 리밸런싱은 -0.3704 %p 로 부호가 바뀌고, 분기 리밸런싱이 +0.3568 %p 로 가장 높다. 손익분기 비용은 일간 28.1 bps 에서 연간 330.3 bps 까지 벌어진다. 비용이 0 이어도 이득이 양수인 경로의 비율은 어느 간격에서나 0.68 에서 0.69 사이이다.
 
 <img src="Shannons_Demon_fig/rebalance_bonus/frequency_net_bonus.png" width="900" style="max-width: 100%;" alt="Fig 6">
@@ -302,6 +302,8 @@ Table 8. Turnover, break-even cost and win rate by rebalancing interval, from `f
 Fig 6. Net rebalancing bonus after transaction cost
 
 ### 5.5 Autocorrelation
+
+Table 9. Median CAGR advantage in %p by AR(1) coefficient under `horizon` normalization, from `autocorrelation_effect.csv`
 
 | AR(1) coefficient | Median advantage | 25th percentile | 75th percentile |
 |---|---|---|---|
@@ -315,8 +317,6 @@ Fig 6. Net rebalancing bonus after transaction cost
 | +0.20 | +0.4489 | -0.2145 | +0.7158 |
 | +0.30 | +0.4422 | -0.2202 | +0.7044 |
 
-Table 9. Median CAGR advantage in %p by AR(1) coefficient under `horizon` normalization, from `autocorrelation_effect.csv`
-
 중앙값은 $\phi$ 에 대해 단조 감소한다. $\phi = -0.30$ 에서 +0.4958 %p, $\phi = +0.30$ 에서 +0.4422 %p 로 범위 전체에서 0.0536 %p 움직인다. 같은 범위에서 사분위 구간은 폭이 0.9 %p 를 넘고 아래쪽 사분위수는 모든 $\phi$ 에서 음수이다.
 
 <img src="Shannons_Demon_fig/rebalance_bonus/autocorrelation_effect.png" width="900" style="max-width: 100%;" alt="Fig 7">
@@ -328,6 +328,8 @@ Fig 7. Rebalancing advantage against return autocorrelation
 표본 기간의 실현 volatility 는 AAPL 45.01%, AMZN 58.49% 이고 correlation 은 0.3006 이다. 이 값을 2.3 절의 식에 넣으면 closed form 보너스는 4.8309 %p 이다. 같은 기간 일간 리밸런싱이 개별 자산 성장률의 가중평균 대비 실제로 얻은 값은 4.8219 %p 로, 차이는 0.0090 %p 이다.
 
 가중평균 자산 CAGR 은 +32.8062%, buy-and-hold 는 +33.2599% 로, buy-and-hold 가 비중 표류만으로 얻은 값은 0.3411 %p 이다.
+
+Table 10. CAGR advantage over buy-and-hold in %p by policy and cost, from `policy_cost_sweep.csv`
 
 | Policy | 0 bps | 5 bps | 10 bps | 25 bps | 50 bps | Annual turnover |
 |---|---|---|---|---|---|---|
@@ -343,8 +345,6 @@ Fig 7. Rebalancing advantage against return autocorrelation
 | band 10% | +5.8037 | +5.7757 | +5.7476 | +5.6635 | +5.5233 | 0.4035 |
 | band 20% | +5.7407 | +5.7269 | +5.7131 | +5.6715 | +5.6023 | 0.1991 |
 
-Table 10. CAGR advantage over buy-and-hold in %p by policy and cost, from `policy_cost_sweep.csv`
-
 <img src="Shannons_Demon_fig/backtest/wealth_curves.png" width="900" style="max-width: 100%;" alt="Fig 8">
 
 Fig 8. Wealth curves of the sampled policies on a log scale
@@ -359,12 +359,12 @@ Fig 10. Advantage against turnover, calendar versus band rebalancing
 
 모든 정책이 모든 비용 수준에서 양수이며, 최소값은 일간 리밸런싱의 50 bps 에서 +4.0141 %p 이다. 회전율 대비 이득이 가장 좋은 것은 밴드 5% 로, 회전율 0.7577 에 50 bps 에서 +5.7498 %p 이다. 같은 회전율대의 월간 리밸런싱은 회전율 0.7029 에 +4.5496 %p 이다.
 
+Table 11. Advantage in %p over 10-year rolling windows at 5 bps, from `rolling_windows.csv`
+
 | Policy | Windows | Median | 25th percentile | 75th percentile | Worst | Best | Win rate |
 |---|---|---|---|---|---|---|---|
 | band 5% | 155 | +1.7539 | +0.6641 | +3.0945 | -4.0140 | +13.4372 | 0.8000 |
 | quarterly | 155 | +1.3864 | +0.2569 | +2.2629 | -4.1883 | +14.1212 | 0.7677 |
-
-Table 11. Advantage in %p over 10-year rolling windows at 5 bps, from `rolling_windows.csv`
 
 <img src="Shannons_Demon_fig/backtest/rolling_windows.png" width="900" style="max-width: 100%;" alt="Fig 11">
 
@@ -468,6 +468,8 @@ python3 src/backtest.py        --output-folder Shannons_Demon_fig \
 
 `kelly.py` 는 `shannon_demon.py` 를 import 하므로 두 파일은 같은 folder 에 있어야 한다. `backtest.py` 는 다른 script 를 import 하지 않으며, 가격 file 을 읽기만 하고 내려받지 않는다.
 
+Table 12. CLI options of `shannon_demon.py`
+
 | Option | Type | Default | Required | Description |
 |---|---|---|---|---|
 | `--output-folder` | path | — | yes | 산출물 root |
@@ -482,7 +484,7 @@ python3 src/backtest.py        --output-folder Shannons_Demon_fig \
 | `--n-sample-paths` | int | 40 | no | 경로 figure 에 그릴 경로 수 |
 | `--seed` | int | 20260829 | no | 난수 seed |
 
-Table 12. CLI options of `shannon_demon.py`
+Table 13. CLI options of `kelly.py`
 
 | Option | Type | Default | Required | Description |
 |---|---|---|---|---|
@@ -499,7 +501,7 @@ Table 12. CLI options of `shannon_demon.py`
 | `--chunk-size` | int | 4000 | no | 한 번에 계산할 경로 수 |
 | `--seed` | int | 20260829 | no | 난수 seed |
 
-Table 13. CLI options of `kelly.py`
+Table 14. CLI options of `rebalance_bonus.py`
 
 | Option | Type | Default | Required | Description |
 |---|---|---|---|---|
@@ -521,7 +523,7 @@ Table 13. CLI options of `kelly.py`
 | `--rho-grid` | float list | -0.90 ~ +0.90 | no | 보너스 격자의 correlation |
 | `--seed` | int | 20260829 | no | 난수 seed |
 
-Table 14. CLI options of `rebalance_bonus.py`
+Table 15. CLI options of `backtest.py`
 
 | Option | Type | Default | Required | Description |
 |---|---|---|---|---|
@@ -542,5 +544,3 @@ Table 14. CLI options of `rebalance_bonus.py`
 | `--rolling-stride-days` | int | 21 | no | 롤링 구간 시작 간격 |
 | `--rolling-cost-bps` | float | 5.0 | no | 롤링 구간의 거래비용 |
 | `--trading-days-per-year` | int | 252 | no | 연환산에 쓰는 거래일 수 |
-
-Table 15. CLI options of `backtest.py`
