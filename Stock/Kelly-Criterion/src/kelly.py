@@ -13,7 +13,7 @@ Changelog:
 """
 
 __author__ = 'yRocket'
-__version__ = "0.2.0.2026.8.30"
+__version__ = "0.2.1.2026.8.30"
 
 import argparse
 import enum
@@ -244,10 +244,24 @@ def plot_growth_zones(analyzer: KellyAnalyzer, optimum: float, output_path: path
         inside = (fractions >= left) & (fractions <= right)
         axis.fill_between(fractions[inside], 0.0, growth[inside],
                           color=ZONE_COLOURS[index], alpha=0.55, linewidth=0.0)
-        axis.text(0.5 * (left + right), 0.5 * np.nanmax(growth) * 0.22, ZONE_LABELS[index],
+        axis.text(0.5 * (left + right), 0.5 * np.nanmax(growth) * 0.42, ZONE_LABELS[index],
                   ha='center', va='center', fontsize=font_size, fontweight='bold')
     axis.plot(fractions, growth, color='black', linewidth=2.0)
     axis.axhline(0.0, color='black', linewidth=1.0)
+
+    # Mark the three boundaries on the curve itself, so the reader can read a value off each.
+    # The last mark sits on the zero line, so its label goes below to clear the zone labels.
+    for multiple, label, above in ((0.5, 'half Kelly', True), (1.0, 'Kelly', True),
+                                   (2.0, 'twice Kelly', False)):
+        position = multiple * optimum
+        if position > limit:
+            continue
+        height = float(analyzer.log_growth(position))
+        axis.plot([position], [height], marker='o', markersize=7, color='black', zorder=3)
+        axis.annotate(f"{label}\nf = {position:.3f}, g = {height:+.4f}",
+                      xy=(position, height), xytext=(0.0, 16.0 if above else -18.0),
+                      textcoords='offset points', ha='center',
+                      va='bottom' if above else 'top', fontsize=font_size - 1)
     axis.set_xticks(edges[:-1])
     axis.set_xticklabels(['0', 'half Kelly', 'Kelly', 'twice Kelly'])
     axis.set_xlim(0.0, limit)
