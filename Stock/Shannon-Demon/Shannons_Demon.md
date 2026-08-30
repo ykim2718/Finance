@@ -1,6 +1,6 @@
 # Shannon's Demon
 
-Rev. 9 | Created: 2026-08-29 | Updated: 2026-08-30 15:44 UTC
+Rev. 10 | Created: 2026-08-29 | Updated: 2026-08-30 16:06 UTC
 
 > **Goal** — 리밸런싱이 만드는 성장률 이득의 크기를 수치로 확정한다. "리밸런싱은 좋다" 가 아니라 "연 몇 %p 이며 거래비용 몇 bps 에서 사라지는가" 를 판단 기준으로 쓸 수 있게 한다.
 >
@@ -63,6 +63,16 @@ Table 2. Closed-form gross bonus in %p of annual log growth
 Fig 3. Gross rebalancing bonus over volatility and correlation
 
 2장의 6% 를 만든 것은 리밸런싱이 아니라 자산의 변동성 크기이다. 배수가 2배와 반토막이라는 설정은 실제 시장에 없다. Table 2 가 보이듯 보너스는 volatility 의 제곱에 비례하므로, volatility 를 20% 로 낮추면 같은 원리에서 나오는 값은 1.00 %p 수준으로 떨어진다.
+
+Table 2 의 두 열 사이 차이도 같은 식에서 바로 나온다. volatility 와 비중을 고정하고 correlation 만 옮기면 보너스의 변화는 correlation 의 차이에 그대로 비례한다.
+
+$$\Delta \text{bonus} = \text{bonus}(\rho_1) - \text{bonus}(\rho_2) = w (1-w) \sigma^2 \left[ (1 - \rho_1) - (1 - \rho_2) \right] = w (1-w) \sigma^2 (\rho_2 - \rho_1)$$
+
+volatility 20%, 동일 비중에서 correlation 을 0.00 에서 +0.90 으로 올리면 다음과 같다.
+
+$$\Delta \text{bonus} = 0.25 \times 0.04 \times 0.90 = 0.009000$$
+
+Table 2 의 20% 행에서 1.00 %p 가 0.10 %p 로 떨어지는 것이 이 값이다. correlation 이 여기까지 오르면 보너스의 90% 가 사라진다. 이 식은 $\rho$ 에 대해 일차이므로 두 지점의 차이는 어림 없이 정확하며, 어떤 두 correlation 에 대해서도 같은 곱셈 한 번으로 나온다.
 
 ### 3.3 What the closed form actually compares
 
