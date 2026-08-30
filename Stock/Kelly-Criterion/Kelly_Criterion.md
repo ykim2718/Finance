@@ -1,6 +1,6 @@
 # Kelly Criterion
 
-Rev. 2 | Created: 2026-08-30 | Updated: 2026-08-30 07:39 UTC
+Rev. 3 | Created: 2026-08-30 | Updated: 2026-08-30 07:50 UTC
 
 > **Goal** — 베팅 비중 하나가 장기 성장률을 얼마나 좌우하는지 수치로 확정한다. "적당히 걸어라" 가 아니라 "최적 비중이 얼마이고, 거기서 벗어나면 성장률과 손실 확률이 각각 얼마나 나빠지는가" 를 판단 기준으로 쓸 수 있게 한다.
 >
@@ -136,9 +136,11 @@ Table 1 의 수치는 서로 독립인 세 방법으로 확인했다.
 ## Appendix A. Terminology
 
 - **closed form** — 반복 계산 없이 식 하나로 값을 주는 해.
+- **full Kelly** — 추정한 최적 비중을 그대로 거는 것.
 - **half Kelly** — 최적 비중의 절반만 거는 관행.
 - **Kelly criterion** — 기대 log 자산을 최대화하는 베팅 비중을 구하는 규칙.
 - **log growth** — 자산 배수의 자연로그. 복리로 더해지므로 장기 성장률의 단위가 된다.
+- **max drawdown** — 직전 최고점 대비 자산이 가장 크게 줄어든 폭.
 - **Monte Carlo** — 난수로 경로를 여러 번 생성해 분포를 추정하는 방법.
 - **overbetting** — 최적 비중보다 크게 거는 것.
 - **ruin fraction** — 한 번의 하락으로 자산이 0 이하가 되는 최소 비중.
@@ -217,3 +219,116 @@ Table 3. CLI options of `kelly.py`
 | `--n-paths` | int | 20000 | no | 비중당 경로 수 |
 | `--chunk-size` | int | 4000 | no | 한 번에 계산할 경로 수 |
 | `--seed` | int | 20260829 | no | 난수 seed |
+
+## Appendix D. Backtest on real prices
+
+본문의 수치는 승률과 배당률을 정확히 아는 베팅에서 나왔다. 4.2 절은 그 가정이 깨지면 무슨 일이 생기는지를 목록으로만 적었다. 이 부록은 그 중 두 가지를 실제 시세로 확인한다. 최적 비중이 실제로 성장률을 최대화하는지, 그리고 과거 자료로 추정한 비중을 앞으로 적용했을 때도 통하는지이다.
+
+Table 4. Price data and backtest settings
+| Item | Value |
+|---|---|
+| Source | Kaggle, Stock Market Dataset ( jacksoncrow/stock-market-dataset ) |
+| Origin | Yahoo Finance, snapshot dated 2020-04-02 |
+| Ticker | AAPL, `Adj Close` |
+| Period | 1980-12-12 to 2020-04-01, 9,909 rows |
+| Cash return | 0% |
+| Rebalancing | every 21 trading days |
+| Estimation window | 5 years |
+| Application window | 1 year, non-overlapping |
+
+위험 자산 하나와 현금이라는 본문의 구조를 그대로 쓴다. 연속 근사에서 최적 비중은 $(\mu - r) / \sigma^2$ 이고, $\mu$ 는 log 수익률의 평균에 분산의 절반을 더해 얻은 산술 drift 이다.
+
+#### The formula in sample
+
+전체 표본의 추정치는 drift +26.9716%, volatility 46.3352% 이고, 여기서 나오는 최적 비중은 1.2563 이다. 실제로 성장률이 가장 높았던 비중은 1.1500 이다. 두 값의 차이는 0.11 이며, 추정 비중에서 실제로 얻은 성장률은 16.3673% 로 실제 최적점의 16.5795% 보다 0.2122 %p 낮다.
+
+Table 5. Realised against predicted annual log growth in %, full sample
+| Fraction | Realised | Predicted | Gap |
+|---|---|---|---|
+| 0.25 | +6.1321 | +6.0720 | +0.0602 |
+| 0.50 | +10.9142 | +10.8021 | +0.1121 |
+| 0.75 | +14.3169 | +14.1904 | +0.1265 |
+| 1.00 | +16.2368 | +16.2368 | +0.0000 |
+| 1.15 | +16.5795 | +16.8206 | -0.2410 |
+| 1.26 | +16.3673 | +16.9417 | -0.5743 |
+| 1.40 | +15.3482 | +16.7201 | -1.3718 |
+| 1.60 | +10.1875 | +15.6736 | -5.4860 |
+| 1.65 | ruined | +15.2777 | — |
+
+<img src="Kelly_Criterion_fig/kelly_backtest/growth_by_fraction.png" width="900" style="max-width: 100%;" alt="Fig 3">
+Fig 3. Realised growth against bet size, with the curve the full-sample estimate predicts
+
+식은 최적점 아래에서 잘 맞는다. 비중 1.00 까지 실제와 예측의 차이는 0.13 %p 를 넘지 않는다. 최적점 위에서는 빠르게 벌어져 1.40 에서 1.37 %p, 1.60 에서 5.49 %p 이며, 1.65 에서는 포트폴리오가 완전히 사라지는데 식은 여전히 +15.2777% 를 예측한다.
+
+이 비대칭의 원인은 lognormal 가정이다. 실제 수익률의 왼쪽 꼬리가 정규분포보다 두꺼워서, 비중을 키울수록 식이 담지 못하는 손실이 커진다. 3.3 절이 시뮬레이션에서 보인 비대칭이 실제 자료에서는 더 심하게 나타난다. 성장률 곡선이 대칭이 아니라 한쪽에서 절벽을 만든다.
+
+이 표본에서 격자의 201개 비중 중 36개가 파산했고 그 최저값은 1.6500 이다. AAPL 이 2000-09-25 부터 21거래일 동안 60.96% 하락했기 때문이며, 그 구간을 넘기지 못하는 비중은 모두 여기에 속한다. 2.4 절의 파산 비중이 실제 자료에서는 이 형태로 나타난다.
+
+또한 실제 최적점에서 겪는 최대 낙폭은 -87.10% 이다. 비중 0.50 에서는 -48.13% 이다. 성장률만 최대화하면 자산의 8할 이상이 사라지는 구간을 지나야 한다.
+
+#### Out of sample
+
+앞의 수치는 전체 기간을 다 본 뒤에 계산한 것이라 실제로 쓸 수 없는 값이다. 여기서는 각 구간마다 직전 5년만 보고 비중을 정한 뒤 그 다음 1년에 적용했다. 추정은 적용 구간을 보지 않는다.
+
+Table 6. Out-of-sample annual log growth in % over 34 windows, 1985-12-10 to 2019-12-05
+| Policy | Median | 25th percentile | 75th percentile | Worst | Best | Win rate | Median max drawdown |
+|---|---|---|---|---|---|---|---|
+| full Kelly | +19.4625 | -17.0711 | +61.2995 | -108.8403 | +197.3414 | 0.6765 | -24.1385 |
+| half Kelly | +10.7814 | -4.1096 | +32.7826 | -320.4731 | +107.9659 | 0.7059 | -12.5031 |
+| fixed 0.50 | +12.0332 | +0.8005 | +24.2183 | -31.3947 | +61.0758 | 0.7647 | -9.4107 |
+| fixed 1.00 | +18.8846 | -0.4611 | +44.9537 | -90.2913 | +116.5211 | 0.7353 | -18.6601 |
+
+<img src="Kelly_Criterion_fig/kelly_backtest/walk_forward.png" width="900" style="max-width: 100%;" alt="Fig 4">
+Fig 4. Estimated Kelly fraction by window and the distribution of out-of-sample growth
+
+추정된 최적 비중은 구간에 따라 -0.3923 에서 4.7991 까지 흔들렸고 중앙값은 1.5018 이다. 34개 구간 중 16개에서 추정값이 파산 비중 1.6500 을 넘었고, 2개 구간에서는 음수가 되어 공매도를 지시했다. 2007-12-03 에 시작하는 구간에서는 추정값 4.7991 이 실제로 적용되어 포트폴리오가 사라졌다.
+
+Table 6 의 중앙값만 보면 full Kelly 가 +19.4625% 로 가장 높다. 그러나 사분위 구간이 -17.0711 에서 +61.2995 로 가장 넓고, 최악 구간은 -108.8403% 이며, 낙폭 중앙값도 -24.1385% 로 가장 크다. 고정 0.50 은 중앙값이 +12.0332% 로 낮지만 사분위 구간의 아래쪽이 양수이고 낙폭이 -9.4107% 에 그친다.
+
+half Kelly 가 고정 0.50 보다 나쁜 것은 처음 보면 이상하다. 원인은 half Kelly 가 추정값의 절반이라는 데 있다. 추정이 음수인 두 구간에서 half Kelly 는 공매도를 하고, 그 구간에 주가가 오르면서 최악값 -320.4731% 를 만들었다. 추정값을 반으로 줄이는 것은 추정의 크기 오차만 줄일 뿐 부호 오차는 줄이지 못한다.
+
+#### What it shows
+
+4.1 절은 half Kelly 를 추정 오차에 대한 대비로 제시했다. 이 표본에서 그 대비는 충분하지 않다. 34개 구간 중 16개에서 추정값 자체가 이미 파산 비중을 넘었으므로, 그 절반도 여전히 위험한 크기이다.
+
+세 가지가 남는다. 첫째, 최적 비중 공식은 값을 아는 상황에서는 실제로 맞는다. 둘째, 그 공식이 안전한 범위는 최적점 아래뿐이며 위쪽은 lognormal 가정이 감당하지 못한다. 셋째, 5년 자료로 추정한 비중은 이 한 종목에서조차 쓸 수 있는 물건이 아니었다. 본문의 결론은 그대로 유효하지만, 그것은 $p$, $u$, $d$ 를 아는 문제에 대한 결론이다.
+
+이 표본은 종목 하나이며 사후에 크게 오른 종목이다. 위의 어떤 수치도 다른 자산으로 일반화되지 않는다.
+
+#### Reproduction
+
+산출물은 `Kelly_Criterion_fig/kelly_backtest` 에 있다.
+
+- `data_provenance.json` — 1 file. 시세 자료의 출처와 읽은 기간.
+- `growth_by_fraction.csv` — 1 file, shape (201 × 6). 1 row = 1 fraction on the grid.
+- `walk_forward.csv` — 1 file, shape (136 × 9). 1 row = 1 window × 1 policy.
+- `growth_by_fraction.png`, `walk_forward.png` — 2 files.
+
+파산은 에러가 아니라 결과로 기록된다. `ruined` 열이 참인 행은 성장률이 정의되지 않아 비어 있으며, 표에서 제외되지 않고 개수가 보고된다. 파산을 조용히 걸러내면 가장 중요한 결과가 사라지기 때문이다.
+
+Table 7. CLI options of `kelly_backtest.py`
+| Option | Type | Default | Required | Description |
+|---|---|---|---|---|
+| `--output-folder` | path | — | yes | 산출물 root |
+| `--price-file` | path | — | yes | 한 종목의 가격 csv |
+| `--ticker` | str | — | yes | 종목 이름, 표기와 provenance 에 쓰임 |
+| `--date-column` | str | Date | no | 날짜 열 이름 |
+| `--price-column` | str | Adj Close | no | 가격 열 이름, 조정 종가 권장 |
+| `--date-format` | str | inferred | no | 날짜 형식, 모호하면 지정 |
+| `--source-name` | str | — | yes | 자료 dataset 이름 |
+| `--source-url` | str | — | yes | 자료 dataset 주소 |
+| `--source-origin` | str | — | yes | 그 dataset 의 원 출처 |
+| `--annual-risk-free` | float | 0.0 | no | 현금 sleeve 의 연 수익률 |
+| `--max-fraction` | float | 2.0 | no | 성장 곡선 격자의 최대 비중 |
+| `--grid-points` | int | 201 | no | 격자점 수 |
+| `--rebalance-interval` | int | 21 | no | 비중 복원 간격, 거래일 |
+| `--estimate-years` | int | 5 | no | 추정 구간 길이 |
+| `--apply-years` | int | 1 | no | 적용 구간 길이 |
+| `--fixed-fractions` | float list | 0.5 1.0 | no | 비교용 고정 비중 |
+| `--trading-days-per-year` | int | 252 | no | 연환산에 쓰는 거래일 수 |
+
+```bash
+python3 src/kelly_backtest.py --output-folder . \
+    --price-file <PRICE_FILE> --ticker AAPL --price-column "Adj Close" \
+    --source-name "<DATASET_NAME>" --source-url "<DATASET_URL>" --source-origin "<ORIGIN>"
+```

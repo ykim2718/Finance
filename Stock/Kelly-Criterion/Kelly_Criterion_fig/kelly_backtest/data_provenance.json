@@ -1,0 +1,11 @@
+{
+  "source_name": "Kaggle, Stock Market Dataset (jacksoncrow/stock-market-dataset)",
+  "source_url": "https://www.kaggle.com/datasets/jacksoncrow/stock-market-dataset",
+  "source_origin": "Yahoo Finance, snapshot dated 2020-04-02",
+  "price_file": "../Kaggle/Stock-Market-Dataset/Stock/AAPL.csv",
+  "ticker": "AAPL",
+  "price_column": "Adj Close",
+  "rows_used": 9909,
+  "first_date": "1980-12-12",
+  "last_date": "2020-04-01"
+}
