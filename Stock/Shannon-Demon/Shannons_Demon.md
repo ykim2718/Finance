@@ -1,12 +1,12 @@
 # Shannon's Demon
 
-Rev. 6 | Created: 2026-08-29 | Updated: 2026-08-30 07:45 UTC
+Rev. 7 | Created: 2026-08-29 | Updated: 2026-08-30 07:34 UTC
 
 > **Goal** — 리밸런싱이 만드는 성장률 이득의 크기를 수치로 확정한다. "리밸런싱은 좋다" 가 아니라 "연 몇 %p 이며 거래비용 몇 bps 에서 사라지는가" 를 판단 기준으로 쓸 수 있게 한다.
 >
 > **Non-Goals** — 자산 3개 이상의 최적 배분, 세금·환율·leverage 모형, 종목 선택 규칙은 다루지 않는다. 실제 시세는 두 종목의 사후 표본 하나이며, 전략 추천이 아니라 모형 검증에 쓴다.
 >
-> **Background** — Claude Shannon 이 1966년 MIT 강연에서 제시한 예시가 출발점이다 \[[4](#ref-4)\]. 이 주장은 널리 인용되지만 인용되는 수치는 대개 극단적 parameter 에서 나온 것이고, 거래비용을 뺀 값이 아니다. 이 문서는 원래 주장을 재현한 뒤, 현실적 volatility 와 거래비용에서 무엇이 남는지를 확인한다.
+> **Background** — Claude Shannon 이 1966년 MIT 강연에서 제시한 예시가 출발점이다 \[[1](#ref-1)\]. 이 주장은 널리 인용되지만 인용되는 수치는 대개 극단적 parameter 에서 나온 것이고, 거래비용을 뺀 값이 아니다. 이 문서는 원래 주장을 재현한 뒤, 현실적 volatility 와 거래비용에서 무엇이 남는지를 확인한다.
 
 ## 1. The claim
 
@@ -39,12 +39,6 @@ Fig 1. Sampled wealth paths of both strategies on a log scale
 Fig 2. Distribution of log growth per period over 20,000 paths
 
 Table 1 의 평균 열은 반대 방향을 가리킨다. buy-and-hold 의 평균이 리밸런싱 포트폴리오의 평균보다 두 자릿수 크지만, 이는 극히 드문 우측 꼬리 때문이며 경로의 0.46685 가 원금을 잃는다. 산술평균으로 전략을 고르면 정반대의 결론에 이른다.
-
-### 2.3 The weight that maximises growth
-
-50:50 은 임의의 선택이 아니라 이 게임의 기대 log 성장률을 최대화하는 비중이다. 기대 log 자산을 최대화하는 이 규칙이 Kelly criterion 이다 \[[1](#ref-1)\]\[[3](#ref-3)\]. 닫힌 해와 수치 최적화가 모두 0.500000 을 주며 둘의 차이는 3.33e-16 이다.
-
-곡선은 최적점 근처에서 평평하다. 비중을 40% 나 60% 로 두어도 기간당 수익은 5.8301% 로 최적값 6.0660% 에서 0.2359 %p 만 낮다. 승률을 정확히 모르는 실제 상황에서 이 평평함이 여유가 된다.
 
 ## 3. The rebalancing bonus
 
@@ -208,16 +202,10 @@ Fig 9. Rebalancing advantage over rolling 10-year windows
 ## References
 
 <a id="ref-1"></a>
-[1] Kelly, J. L. Jr. "A New Interpretation of Information Rate." Bell System Technical Journal 35, no. 4 (1956): 917–926. DOI 10.1002/j.1538-7305.1956.tb03809.x
+[1] Poundstone, W. Fortune's Formula: The Untold Story of the Scientific Betting System That Beat the Casinos and Wall Street. Hill and Wang, 2005. ISBN 978-0-8090-4599-0
 
 <a id="ref-2"></a>
 [2] Fernholz, R., and B. Shay. "Stochastic Portfolio Theory and Stock Market Equilibrium." Journal of Finance 37, no. 2 (1982): 615–624. DOI 10.1111/j.1540-6261.1982.tb03584.x
-
-<a id="ref-3"></a>
-[3] Thorp, E. O. "The Kelly Criterion in Blackjack, Sports Betting, and the Stock Market." In Handbook of Asset and Liability Management, Volume 1, 385–428. North-Holland, 2006. DOI 10.1016/S1872-0978(06)01009-X
-
-<a id="ref-4"></a>
-[4] Poundstone, W. Fortune's Formula: The Untold Story of the Scientific Betting System That Beat the Casinos and Wall Street. Hill and Wang, 2005. ISBN 978-0-8090-4599-0
 
 ---
 
@@ -228,7 +216,6 @@ Fig 9. Rebalancing advantage over rolling 10-year windows
 - **bps** — basis point. 0.01% 이다.
 - **buy-and-hold** — 최초 비중으로 매수한 뒤 거래하지 않는 운용. 비중은 자산의 성과에 따라 표류한다.
 - **CAGR** — compound annual growth rate. 기간 수익을 연 복리 수익률로 환산한 값.
-- **Kelly criterion** — 기대 log 자산을 최대화하는 베팅 비중을 구하는 규칙.
 - **rebalancing bonus** — 고정 비중 포트폴리오의 log 성장률이 개별 자산 log 성장률의 가중평균을 넘는 부분.
 - **Shannon's Demon** — 기대 성장률이 0인 자산과 현금을 정기적으로 리밸런싱하면 포트폴리오가 성장한다는 예시에 붙은 이름.
 - **sleeve** — 포트폴리오를 자산별로 나눈 한 칸. 리밸런싱은 sleeve 사이에서 금액을 옮기는 일이다.
@@ -252,8 +239,6 @@ backtest.py         real price history   -> chapter 5
 - `shannon_demon.py` — 동전 던지기 자산과 현금을 두고 리밸런싱과 buy-and-hold 를 같은 난수 위에서 비교한다.
 - `rebalance_bonus.py` — 같은 효과를 lognormal 자산에서 측정한다. closed form 값, 거래비용을 뺀 값, autocorrelation 이 있을 때의 값을 낸다.
 - `backtest.py` — 가정한 수익률 과정 대신 실제 시세를 읽어 같은 질문을 다시 던진다.
-
-2.3 절의 최적 비중은 `kelly.py` 가 낸 값이며, 그 script 와 산출물은 이 문서의 범위 밖이다.
 
 #### Parameters
 
