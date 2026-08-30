@@ -1,6 +1,6 @@
 # Kelly Criterion
 
-Rev. 6 | Created: 2026-08-30 | Updated: 2026-08-30 15:50 UTC
+Rev. 7 | Created: 2026-08-30 | Updated: 2026-08-30 15:52 UTC
 
 > **Goal** — 베팅 비중 하나가 장기 성장률을 얼마나 좌우하는지 수치로 확정한다. "적당히 걸어라" 가 아니라 "최적 비중이 얼마이고, 거기서 벗어나면 성장률과 손실 확률이 각각 얼마나 나빠지는가" 를 판단 기준으로 쓸 수 있게 한다.
 >
@@ -40,9 +40,9 @@ $g$ 를 최대화하는 것과 장기 자산을 최대화하는 것이 같은 �
 
 $A = u - c$, $B = d - c$ 로 두면 $g'(f) = 0$ 이 일차식이 되어 해가 하나로 떨어진다.
 
-$$f^{*} = -\frac{c \left(p A + (1-p) B\right)}{A B}$$
+$$f^{\ast} = -\frac{c \left(p A + (1-p) B\right)}{A B}$$
 
-분자의 $p A + (1-p) B$ 는 현금 대비 초과 수익의 기댓값이고 분모의 $A B$ 는 음수이다. 따라서 기대 초과 수익이 양수일 때만 $f^{*}$ 가 양수가 된다. 유리하지 않은 베팅에는 걸지 않는다는 상식이 식에서 그대로 나온다.
+분자의 $p A + (1-p) B$ 는 현금 대비 초과 수익의 기댓값이고 분모의 $A B$ 는 음수이다. 따라서 기대 초과 수익이 양수일 때만 $f^{\ast}$ 가 양수가 된다. 유리하지 않은 베팅에는 걸지 않는다는 상식이 식에서 그대로 나온다.
 
 ### 2.4 Ruin fraction
 
@@ -75,8 +75,8 @@ Table 1. Growth rate and simulated outcome by fraction
 
 이 표의 수치는 서로 독립인 세 방법으로 확인했다.
 
-- Closed form — 2.3 절의 식에 값을 넣어 얻은 $f^{*} = 0.500000$.
-- Numeric search — 같은 성장 함수를 수치 최적화로 최대화해 얻은 $f^{*} = 0.500000$. 닫힌 해와의 차이는 3.33e-16 이다.
+- Closed form — 2.3 절의 식에 값을 넣어 얻은 $f^{\ast} = 0.500000$.
+- Numeric search — 같은 성장 함수를 수치 최적화로 최대화해 얻은 $f^{\ast} = 0.500000$. 닫힌 해와의 차이는 3.33e-16 이다.
 - Monte Carlo — 게임을 실제로 반복해 얻은 기간당 성장률 표본. 그 중앙값이 해석해와 소수점 여섯 자리까지 일치한다.
 
 세 번째가 가장 중요하다. 기대 log 성장률은 정의상 log 자산의 기댓값이지 흔한 결과가 아닌데, 중앙값과 일치한다는 것은 2.2 절의 해석이 맞다는 뜻이다. 기간이 길어질수록 log 자산이 정규분포에 가까워져 평균과 중앙값이 같아지기 때문이며, 4.3 절이 지적한 대로 기간이 짧으면 이 일치는 깨진다.
@@ -94,7 +94,7 @@ Fig 1. Expected log growth against bet size, with the simulated medians overlaid
 
 ### 3.3 Symmetric growth, asymmetric risk
 
-곡선은 $f^{*}$ 를 축으로 대칭이다. 0.250 과 0.750 의 성장률이 +0.044806 로 같고, 0.375 와 0.625 도 +0.055407 로 같다.
+곡선은 $f^{\ast}$ 를 축으로 대칭이다. 0.250 과 0.750 의 성장률이 +0.044806 로 같고, 0.375 와 0.625 도 +0.055407 로 같다.
 
 이 대칭이 오해를 부른다. 성장률만 보면 최적점에서 같은 거리만큼의 underbetting 과 overbetting 이 동등해 보이지만, 손실 확률은 0.250 에서 0.00665, 0.750 에서 0.18680 으로 28배 차이가 난다.
 
@@ -109,26 +109,27 @@ Fig 2. Simulated growth distribution by bet size
 
 ### 4.1 Four zones of bet size
 
-실전에서 필요한 것은 최적 비중의 값 하나가 아니라, 자기 비중이 어느 구간에 있는지이다. 2.3 절의 식이 주는 $f^{*}$ 를 기준으로 삼으면 비중 축은 네 구간으로 나뉜다.
+실전에서 필요한 것은 최적 비중의 값 하나가 아니라, 자기 비중이 어느 구간에 있는지이다. 2.3 절의 식이 주는 $f^{\ast}$ 를 기준으로 삼으면 비중 축은 네 구간으로 나뉜다.
 
-<img src="Kelly_Criterion_fig/formula_card.png" width="600" style="max-width: 100%;" alt="Fig 3">
-Fig 3. The closed-form optimum and the meaning of each symbol
+$$f^{\ast} = -\frac{c \left(p A + (1-p) B\right)}{A B}, \qquad A = u - c, \qquad B = d - c$$
 
-<img src="Kelly_Criterion_fig/growth_zones.png" width="600" style="max-width: 100%;" alt="Fig 4">
-Fig 4. Growth curve split into four zones at half, one and two times the optimum
+이 게임의 값 $u = 2$, $d = 0.5$, $c = 1$, $p = 0.5$ 를 넣으면 $f^{\ast} = 0.500$ 이다.
 
-- $f^{*}$ 아래 절반 — 성장률을 일부 포기하는 대신 분포가 좁아지는 구간.
-- $f^{*}$ 의 절반과 $f^{*}$ 사이 — 성장률이 최대에 가까우면서 아직 최적점을 넘지 않은 구간.
-- $f^{*}$ 와 $2 f^{*}$ 사이 — 성장률이 떨어지는데 변동성은 계속 커지는 구간. 더 걸어서 잃는다.
-- $2 f^{*}$ 위 — 성장률이 음수인 구간. 이길 확률이 있는 베팅으로 장기적으로 확실히 잃는다.
+<img src="Kelly_Criterion_fig/growth_zones.png" width="600" style="max-width: 100%;" alt="Fig 3">
+Fig 3. Growth curve split into four zones at half, one and two times the optimum
 
-Fig 4 에 세 경계를 점으로 찍고 값을 함께 적었다. half Kelly 는 f = 0.250 에서 g = +0.0448, Kelly 는 f = 0.500 에서 g = +0.0589, twice Kelly 는 f = 1.000 에서 g = +0.0000 이다.
+- $f^{\ast}$ 아래 절반 — 성장률을 일부 포기하는 대신 분포가 좁아지는 구간.
+- $f^{\ast}$ 의 절반과 $f^{\ast}$ 사이 — 성장률이 최대에 가까우면서 아직 최적점을 넘지 않은 구간.
+- $f^{\ast}$ 와 $2 f^{\ast}$ 사이 — 성장률이 떨어지는데 변동성은 계속 커지는 구간. 더 걸어서 잃는다.
+- $2 f^{\ast}$ 위 — 성장률이 음수인 구간. 이길 확률이 있는 베팅으로 장기적으로 확실히 잃는다.
 
-이 중 twice Kelly 가 실질적인 상한이다. $f^{*}$ 는 성장률이 꺾이기 시작하는 지점일 뿐이어서 조금 넘겨도 성장률은 여전히 양수이지만, $2 f^{*}$ 를 넘는 순간 부호가 바뀌어 이길 확률이 있는 베팅으로 장기적으로 확실히 잃는다. 이 게임에서 $2 f^{*}$ 는 정확히 1.000 이므로 전 재산을 거는 것이 곧 그 경계이며, Table 1 의 비중 1.000 행이 +0.000000 인 것이 같은 값이다.
+Fig 3 에 세 경계를 점으로 찍고 값을 함께 적었다. half Kelly 는 f = 0.250 에서 g = +0.0448, Kelly 는 f = 0.500 에서 g = +0.0589, twice Kelly 는 f = 1.000 에서 g = +0.0000 이다.
+
+이 중 twice Kelly 가 실질적인 상한이다. $f^{\ast}$ 는 성장률이 꺾이기 시작하는 지점일 뿐이어서 조금 넘겨도 성장률은 여전히 양수이지만, $2 f^{\ast}$ 를 넘는 순간 부호가 바뀌어 이길 확률이 있는 베팅으로 장기적으로 확실히 잃는다. 이 게임에서 $2 f^{\ast}$ 는 정확히 1.000 이므로 전 재산을 거는 것이 곧 그 경계이며, Table 1 의 비중 1.000 행이 +0.000000 인 것이 같은 값이다.
 
 half Kelly 는 반대쪽 끝을 보여준다. 성장률이 +0.0448 로 최대값 +0.0589 의 0.7608 배이므로, 비중을 절반으로 줄여도 성장의 4분의 1 미만을 내놓는다.
 
-경계가 $f^{*}$ 와 $2 f^{*}$ 에 오는 것은 이 게임의 우연이 아니다. $g$ 는 $f=0$ 에서 0 이고 위로 볼록하므로, 최대점의 두 배에서 다시 0 을 지난다. 어떤 베팅이든 같은 구조를 갖는다.
+경계가 $f^{\ast}$ 와 $2 f^{\ast}$ 에 오는 것은 이 게임의 우연이 아니다. $g$ 는 $f=0$ 에서 0 이고 위로 볼록하므로, 최대점의 두 배에서 다시 0 을 지난다. 어떤 베팅이든 같은 구조를 갖는다.
 
 ### 4.2 Half Kelly
 
@@ -198,13 +199,14 @@ Kelly_Criterion_fig/
 ├── growth_curve.csv
 ├── simulated_log_growth.csv
 ├── growth_curve.png
-└── growth_violin.png
+├── growth_violin.png
+└── growth_zones.png
 ```
 
 - `growth_curve.csv` — 1 file, shape (401 × 3). 1 row = 1 fraction on the grid.
 - `simulated_log_growth.csv` — 1 file, shape (100,000 × 3). 1 row = 1 path × 1 fraction.
 - `growth_curve.png` — 1 file.
-- `growth_violin.png` — 1 file.
+- `growth_violin.png`, `growth_zones.png` — 2 files.
 
 Table 1 의 해석해 열은 `growth_curve.csv` 에서, 시뮬레이션 열은 `simulated_log_growth.csv` 에서 계산했다. 분포를 그리는 figure 는 요약값이 아니라 표본을 저장하므로, 본문의 백분위수는 figure 에서 읽은 값이 아니라 표본에서 계산한 값이다.
 
@@ -276,8 +278,8 @@ Table 5. Realised against predicted annual log growth in %, full sample
 | 1.60 | +10.1875 | +15.6736 | -5.4860 |
 | 1.65 | ruined | +15.2777 | — |
 
-<img src="Kelly_Criterion_fig/kelly_backtest/growth_by_fraction.png" width="900" style="max-width: 100%;" alt="Fig 5">
-Fig 5. Realised growth against bet size, with the curve the full-sample estimate predicts
+<img src="Kelly_Criterion_fig/kelly_backtest/growth_by_fraction.png" width="900" style="max-width: 100%;" alt="Fig 4">
+Fig 4. Realised growth against bet size, with the curve the full-sample estimate predicts
 
 식은 최적점 아래에서 잘 맞는다. 비중 1.00 까지 실제와 예측의 차이는 0.13 %p 를 넘지 않는다. 최적점 위에서는 빠르게 벌어져 1.40 에서 1.37 %p, 1.60 에서 5.49 %p 이며, 1.65 에서는 포트폴리오가 완전히 사라지는데 식은 여전히 +15.2777% 를 예측한다.
 
@@ -299,8 +301,8 @@ Table 6. Out-of-sample annual log growth in % over 34 windows, 1985-12-10 to 201
 | fixed 0.50 | +12.0332 | +0.8005 | +24.2183 | -31.3947 | +61.0758 | 0.7647 | -9.4107 |
 | fixed 1.00 | +18.8846 | -0.4611 | +44.9537 | -90.2913 | +116.5211 | 0.7353 | -18.6601 |
 
-<img src="Kelly_Criterion_fig/kelly_backtest/walk_forward.png" width="900" style="max-width: 100%;" alt="Fig 6">
-Fig 6. Estimated Kelly fraction by window and the distribution of out-of-sample growth
+<img src="Kelly_Criterion_fig/kelly_backtest/walk_forward.png" width="900" style="max-width: 100%;" alt="Fig 5">
+Fig 5. Estimated Kelly fraction by window and the distribution of out-of-sample growth
 
 추정된 최적 비중은 구간에 따라 -0.3923 에서 4.7991 까지 흔들렸고 중앙값은 1.5018 이다. 34개 구간 중 16개에서 추정값이 파산 비중 1.6500 을 넘었고, 2개 구간에서는 음수가 되어 공매도를 지시했다. 2007-12-03 에 시작하는 구간에서는 추정값 4.7991 이 실제로 적용되어 포트폴리오가 사라졌다.
 
