@@ -73,7 +73,7 @@ Table 1. Growth rate and simulated outcome by fraction
 
 0.375 와 0.625 는 해석해만 계산했고 시뮬레이션 대상이 아니므로 뒤 네 열을 `—` 로 둔다.
 
-<img src="Shannons_Demon_fig/kelly/growth_curve.png" width="900" style="max-width: 100%;" alt="Fig 1">
+<img src="Kelly_Criterion_fig/growth_curve.png" width="900" style="max-width: 100%;" alt="Fig 1">
 Fig 1. Expected log growth against bet size, with the simulated medians overlaid
 
 ### 3.2 Flatness near the optimum
@@ -92,7 +92,7 @@ Fig 1. Expected log growth against bet size, with the simulated medians overlaid
 
 두 방향이 바꾸는 것이 다르기 때문이다. underbetting 은 분포 전체를 좁히고, overbetting 은 분포를 넓힌 채로 중앙값만 끌어내린다. 성장률이라는 한 숫자는 이 차이를 담지 못한다.
 
-<img src="Shannons_Demon_fig/kelly/growth_violin.png" width="900" style="max-width: 100%;" alt="Fig 2">
+<img src="Kelly_Criterion_fig/growth_violin.png" width="900" style="max-width: 100%;" alt="Fig 2">
 Fig 2. Simulated growth distribution by bet size
 
 비중이 커질수록 분포의 폭이 넓어진다. 5th percentile 과 95th percentile 의 간격은 0.100 에서 0.0235, 0.500 에서 0.1109, 1.000 에서 0.2218 이다. 5th percentile 의 부호는 0.500 까지 양수이고 0.750 부터 음수이다.
@@ -168,15 +168,14 @@ Table 2. Bet and simulation parameters of the run cited in this document
 
 #### Output files
 
-산출물은 `--output-folder` 아래 script 이름 folder 로 들어간다. 본문이 인용하는 실행은 `Shannons_Demon_fig` 를 root 로 썼다.
+산출물은 이 문서 옆의 `Kelly_Criterion_fig` folder 에 둔다.
 
 ```text
-Shannons_Demon_fig/
-└── kelly/
-    ├── growth_curve.csv
-    ├── simulated_log_growth.csv
-    ├── growth_curve.png
-    └── growth_violin.png
+Kelly_Criterion_fig/
+├── growth_curve.csv
+├── simulated_log_growth.csv
+├── growth_curve.png
+└── growth_violin.png
 ```
 
 - `growth_curve.csv` — 1 file, shape (401 × 3). 1 row = 1 fraction on the grid.
@@ -194,12 +193,14 @@ Table 1 의 해석해 열은 `growth_curve.csv` 에서, 시뮬레이션 열은 `
 
 ## Appendix C. CLI (Command Line Options)
 
-Option 없이 실행하면 script 이름과 version 을 출력한다. `-h` 로 전체 목록을, `-v` 로 version 을 본다. `--output-folder` 는 필수이며 모든 산출물의 root 가 된다. 아래 명령은 이 문서가 있는 folder 를 기준으로 하며, `kelly.py` 는 같은 folder 의 `shannon_demon.py` 를 import 하므로 두 파일이 함께 있어야 한다.
+Option 없이 실행하면 script 이름과 version 을 출력한다. `-h` 로 전체 목록을, `-v` 로 version 을 본다. `--output-folder` 는 필수이다. `kelly.py` 는 같은 folder 의 `shannon_demon.py` 를 import 하므로 두 파일이 함께 있어야 하며, 두 file 은 이 문서의 상위 folder 아래 `src` 에 있다. 아래 명령은 이 문서가 있는 folder 를 기준으로 한다.
 
 ```bash
-python3 src/kelly.py --output-folder Shannons_Demon_fig
-python3 src/kelly.py --output-folder Shannons_Demon_fig --up-prob 0.55 --sim-fractions 0.1 0.2 0.3
+python3 ../src/kelly.py --output-folder .
+python3 ../src/kelly.py --output-folder . --up-prob 0.55 --sim-fractions 0.1 0.2 0.3
 ```
+
+`--output-folder` 로 준 folder 아래 `kelly` folder 가 만들어지므로, 본문이 인용하는 `Kelly_Criterion_fig` 로 쓰려면 그 folder 이름을 바꾼다.
 
 Table 3. CLI options of `kelly.py`
 | Option | Type | Default | Required | Description |
