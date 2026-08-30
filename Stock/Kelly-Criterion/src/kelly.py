@@ -1,17 +1,18 @@
 """
 Kelly criterion applied to Shannon's coin-flip game.
 
-The rebalanced weight of `shannon_demon.py` is not an arbitrary choice: it is the fraction that
-maximises expected log growth. This module traces the growth rate as a function of the stock
+A two-outcome bet is repeated for many periods with a fixed fraction of wealth staked and the
+weights restored every period. This module traces the resulting growth rate as a function of that
 fraction, locates the optimum in closed form and numerically, and checks both against a Monte Carlo
 simulation of the same game.
 
 Changelog:
 - 0.0.0 Initial release.
+- 0.1.0 Simulate the game here instead of importing it, so the module stands on its own.
 """
 
 __author__ = 'yRocket'
-__version__ = "0.0.0.2026.8.29"
+__version__ = "0.1.0.2026.8.30"
 
 import argparse
 import enum
@@ -27,14 +28,13 @@ from matplotlib.colors import TABLEAU_COLORS
 from scipy.optimize import minimize_scalar
 from tqdm import tqdm
 
-from shannon_demon import GameSpec, ShannonDemonSimulator, Strategy
-
 matplotlib.use('Agg')  # headless rendering; batch runs have no display server
 
 __all__ = [
     'Column',
     'BetSpec',
     'KellyAnalyzer',
+    'simulate_terminal_wealth',
     'build_curve_frame',
     'build_simulation_frame',
     'plot_growth_curve',
@@ -156,6 +156,35 @@ def build_curve_frame(analyzer: KellyAnalyzer, max_fraction: float, grid_points:
     })
 
 
+def simulate_terminal_wealth(spec: BetSpec, fraction: float, n_periods: int, n_paths: int,
+                             chunk_size: int, seed: int) -> np.ndarray:
+    """
+    Return terminal wealth of the rebalanced portfolio, one entry per path, starting from 1.
+
+    The weights are restored every period, so one period multiplies wealth by a fixed blend of the
+    two outcomes rather than by the bet alone. Paths are drawn in chunks to bound peak memory.
+    """
+    if not 0.0 <= fraction <= 1.0:
+        raise ValueError(f"fraction must lie in [0, 1]; got {fraction!r}.")
+    floor = fraction * spec.down_factor + (1.0 - fraction) * spec.cash_factor
+    if floor <= 0.0:
+        raise ValueError(
+            f"fraction {fraction!r} wipes the portfolio out on a down move; it reaches the ruin "
+            f"fraction {spec.ruin_fraction!r}."
+        )
+    rng = np.random.default_rng(seed)
+    chunks = []
+    remaining = n_paths
+    while remaining > 0:
+        size = min(chunk_size, remaining)
+        is_up = rng.random((size, n_periods)) < spec.up_prob
+        bet = np.where(is_up, spec.up_factor, spec.down_factor)
+        blended = fraction * bet + (1.0 - fraction) * spec.cash_factor
+        chunks.append(np.prod(blended, axis=1))
+        remaining -= size
+    return np.concatenate(chunks)
+
+
 def build_simulation_frame(spec: BetSpec, fractions: tuple, n_periods: int, n_paths: int,
                            chunk_size: int, seed: int) -> pd.DataFrame:
     """
@@ -166,22 +195,17 @@ def build_simulation_frame(spec: BetSpec, fractions: tuple, n_periods: int, n_pa
     """
     if len(fractions) == 0:
         raise ValueError("fractions is empty; nothing to simulate.")
+    if n_periods < 1 or n_paths < 1 or chunk_size < 1:
+        raise ValueError(
+            f"n_periods, n_paths and chunk_size must be >= 1; got {n_periods!r}, {n_paths!r}, "
+            f"{chunk_size!r}."
+        )
     frames = []
     pbar = tqdm(fractions, ncols=100, unit='fraction')
     for offset, fraction in enumerate(pbar):
         pbar.set_description(f"Simulating fraction {fraction:.2f}")
-        game = GameSpec(
-            up_factor=spec.up_factor,
-            down_factor=spec.down_factor,
-            cash_factor=spec.cash_factor,
-            up_prob=spec.up_prob,
-            stock_weight=float(fraction),
-            n_periods=n_periods,
-            n_paths=n_paths,
-            seed=seed + offset,
-        )
-        terminal, _ = ShannonDemonSimulator(spec=game, chunk_size=chunk_size).run(n_sample_paths=1)
-        wealth = terminal[Strategy.REBALANCED]
+        wealth = simulate_terminal_wealth(spec=spec, fraction=float(fraction), n_periods=n_periods,
+                                          n_paths=n_paths, chunk_size=chunk_size, seed=seed + offset)
         frames.append(pd.DataFrame({
             str(Column.FRACTION): float(fraction),
             str(Column.PATH): np.arange(wealth.size),

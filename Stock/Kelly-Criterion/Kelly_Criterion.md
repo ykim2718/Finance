@@ -1,6 +1,6 @@
 # Kelly Criterion
 
-Rev. 1 | Created: 2026-08-30 | Updated: 2026-08-30 07:12 UTC
+Rev. 2 | Created: 2026-08-30 | Updated: 2026-08-30 07:39 UTC
 
 > **Goal** — 베팅 비중 하나가 장기 성장률을 얼마나 좌우하는지 수치로 확정한다. "적당히 걸어라" 가 아니라 "최적 비중이 얼마이고, 거기서 벗어나면 성장률과 손실 확률이 각각 얼마나 나빠지는가" 를 판단 기준으로 쓸 수 있게 한다.
 >
@@ -193,11 +193,11 @@ Table 1 의 해석해 열은 `growth_curve.csv` 에서, 시뮬레이션 열은 `
 
 ## Appendix C. CLI (Command Line Options)
 
-Option 없이 실행하면 script 이름과 version 을 출력한다. `-h` 로 전체 목록을, `-v` 로 version 을 본다. `--output-folder` 는 필수이다. `kelly.py` 는 같은 folder 의 `shannon_demon.py` 를 import 하므로 두 파일이 함께 있어야 하며, 두 file 은 이 문서의 상위 folder 아래 `src` 에 있다. 아래 명령은 이 문서가 있는 folder 를 기준으로 한다.
+Option 없이 실행하면 script 이름과 version 을 출력한다. `-h` 로 전체 목록을, `-v` 로 version 을 본다. `--output-folder` 는 필수이다. `kelly.py` 는 다른 script 를 import 하지 않으며 이 문서 옆의 `src` folder 에 있다. 아래 명령은 이 문서가 있는 folder 를 기준으로 한다.
 
 ```bash
-python3 ../src/kelly.py --output-folder .
-python3 ../src/kelly.py --output-folder . --up-prob 0.55 --sim-fractions 0.1 0.2 0.3
+python3 src/kelly.py --output-folder .
+python3 src/kelly.py --output-folder . --up-prob 0.55 --sim-fractions 0.1 0.2 0.3
 ```
 
 `--output-folder` 로 준 folder 아래 `kelly` folder 가 만들어지므로, 본문이 인용하는 `Kelly_Criterion_fig` 로 쓰려면 그 folder 이름을 바꾼다.

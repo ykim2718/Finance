@@ -1,6 +1,6 @@
 # Shannon's Demon
 
-Rev. 7 | Created: 2026-08-29 | Updated: 2026-08-30 07:34 UTC
+Rev. 8 | Created: 2026-08-29 | Updated: 2026-08-30 07:39 UTC
 
 > **Goal** — 리밸런싱이 만드는 성장률 이득의 크기를 수치로 확정한다. "리밸런싱은 좋다" 가 아니라 "연 몇 %p 이며 거래비용 몇 bps 에서 사라지는가" 를 판단 기준으로 쓸 수 있게 한다.
 >
@@ -333,12 +333,12 @@ Shannons_Demon_fig/
 
 ## Appendix C. CLI (Command Line Options)
 
-세 script 모두 option 없이 실행하면 이름과 version 을 출력하고, `-h` 로 전체 목록을, `-v` 로 version 을 보인다. `--output-folder` 는 필수이며 모든 산출물의 root 가 된다. Script 는 이 문서의 상위 folder 아래 `src` 에 있으며, 아래 명령은 이 문서가 있는 folder 를 기준으로 한다.
+세 script 모두 option 없이 실행하면 이름과 version 을 출력하고, `-h` 로 전체 목록을, `-v` 로 version 을 보인다. `--output-folder` 는 필수이며 모든 산출물의 root 가 된다. 세 script 는 이 문서 옆의 `src` folder 에 있으며, 아래 명령은 이 문서가 있는 folder 를 기준으로 한다.
 
 ```bash
-python3 ../src/shannon_demon.py   --output-folder Shannons_Demon_fig
-python3 ../src/rebalance_bonus.py --output-folder Shannons_Demon_fig
-python3 ../src/backtest.py        --output-folder Shannons_Demon_fig \
+python3 src/shannon_demon.py   --output-folder Shannons_Demon_fig
+python3 src/rebalance_bonus.py --output-folder Shannons_Demon_fig
+python3 src/backtest.py        --output-folder Shannons_Demon_fig \
     --price-folder <PRICE_FOLDER> --tickers AAPL AMZN --price-column "Adj Close" \
     --source-name "<DATASET_NAME>" --source-url "<DATASET_URL>" --source-origin "<ORIGIN>"
 ```
