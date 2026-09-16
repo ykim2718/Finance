@@ -1,5 +1,5 @@
 # Klomagi Moving Average Convergence Breakout
-Rev. 3 | Created: 2026-09-10 | Updated: 2026-09-10 23:20 UTC
+Rev. 4 | Created: 2026-09-10 | Updated: 2026-09-16 13:28 UTC
 
 ## 1. Purpose
 
@@ -173,8 +173,8 @@ Fig 2 에서 신호 계좌는 2015년 중반까지 두 지수와 함께 가다�
 ### B.5 Reproduction
 
 ```bash
-python3 klomagi_backtest.py --data-csv all_stocks_5yr.csv --index-csv sp500-2000.csv \
-    --output-folder klomagi_backtest_out
+python3 src/klomagi_backtest.py --data-csv all_stocks_5yr.csv --index-csv sp500-2000.csv \
+    --output-folder klomagi-ko_fig
 ```
 
 `--data-csv` 와 `--index-csv` 가 가리키는 파일이 없으면 References 의 주소에서 내려받는다. 출력은 매매 한 건이 한 행인 `trades.csv`, 조건 조합별 집계인 `grid.csv`, 네 계좌의 일별 수익과 보유 종목 수인 `equity.csv`, Fig 1 의 `fig1.png` 와 Fig 2 의 `fig2.png`, 그리고 표본과 조건과 집계를 담은 `summary.json` 이다. 대조군의 무작위 진입일은 `--seed` 로 고정되며, 이 문서의 수치는 기본값 20260910 으로 얻은 것이다.
@@ -182,9 +182,9 @@ python3 klomagi_backtest.py --data-csv all_stocks_5yr.csv --index-csv sp500-2000
 ## Appendix C. Backtest script
 
 ```python
-# Stock/Klomagi/klomagi_backtest.py
+# Stock/Klomagi/src/klomagi_backtest.py
 __author__ = 'yRocket'
-__version__ = "0.2.0.2026.9.10"  # Semantic Versioning: Major.Minor.Patch.Date(YYYY.M.D)
+__version__ = "0.2.1.2026.9.10"  # Semantic Versioning: Major.Minor.Patch.Date(YYYY.M.D)
 
 __all__ = [
     'RuleParams',
@@ -196,6 +196,7 @@ __all__ = [
     'find_signals',
     'run_trades',
     'summarize',
+    'position_returns',
     'equity_curve',
     'load_index_level',
     'index_curve',
@@ -472,15 +473,14 @@ def summarize(trades: pd.DataFrame) -> dict:
     }
 
 
-def equity_curve(prices: pd.DataFrame, trades: pd.DataFrame) -> pd.DataFrame:
-    """Turn one arm of trades into the daily curve of a portfolio that splits capital evenly.
+def position_returns(prices: pd.DataFrame, trades: pd.DataFrame) -> tuple:
+    """Spread the trades over the calendar and add up what the open positions earn each day.
 
-    On a given day the capital is spread over the positions open that day and sits in cash, earning
-    nothing, on the days with no position. A position earns close/open on its entry day, close on
-    close while it is held, and the recorded exit price against the previous close on its exit day.
+    A position earns close/open on its entry day, close on close while it is held, and the recorded
+    exit price against the previous close on its exit day.
 
-    Returns a pd.DataFrame indexed by 'date' with the columns
-    ['daily_return', 'open_positions', 'equity'], where equity starts at 1.0 before the first day.
+    Returns (calendar, summed daily return of the open positions, number of open positions), the
+    last two as float arrays aligned with the calendar.
     """
     calendar = np.sort(prices['date'].unique())
     series = {ticker: (frame['date'].to_numpy(), frame['open'].to_numpy(), frame['close'].to_numpy())
@@ -510,10 +510,22 @@ def equity_curve(prices: pd.DataFrame, trades: pd.DataFrame) -> pd.DataFrame:
         total[slots] += returns
         count[slots] += 1.0
 
+    return calendar, total, count
+
+
+def equity_curve(prices: pd.DataFrame, trades: pd.DataFrame) -> pd.DataFrame:
+    """Turn one arm of trades into the daily curve of a portfolio that splits capital evenly.
+
+    On a given day the capital is spread over the positions open that day and sits in cash, earning
+    nothing, on the days with no position.
+
+    Returns a pd.DataFrame indexed by 'date' with the columns
+    ['daily_return', 'open_positions', 'equity'], where equity starts at 1.0 before the first day.
+    """
+    calendar, total, count = position_returns(prices=prices, trades=trades)
     daily = np.where(count > 0.0, total / np.where(count > 0.0, count, 1.0), 0.0)
-    curve = pd.DataFrame({'daily_return': daily, 'open_positions': count.astype(int),
-                          'equity': (1.0 + daily).cumprod()}, index=pd.Index(calendar, name='date'))
-    return curve
+    return pd.DataFrame({'daily_return': daily, 'open_positions': count.astype(int),
+                         'equity': (1.0 + daily).cumprod()}, index=pd.Index(calendar, name='date'))
 
 
 def load_index_level(csv_path: pathlib.Path, calendar: np.ndarray, url: str = INDEX_URL) -> pd.Series:
