@@ -2,7 +2,8 @@ __pycache__/
 *.py[cod]
 
 # Claude Code plugin registration: kept local so the rules apply while working,
-# never pushed.
-.claude/
+# never pushed. settings.json is the exception: it enables the shared plugins.
+.claude/*
+!.claude/settings.json
 .claude-plugin/
 plugins/
